@@ -1,0 +1,164 @@
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-size: cover;
+  font-family: 'Hack', monospace;
+}
+
+body {
+  background-color: #0e0e12;
+  color: #eaeaea;
+  line-height: 1.6;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  background: rgba(20, 20, 25, 0.8);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #00bcd4;
+}
+
+.navbar nav a {
+  color: #eaeaea;
+  text-decoration: none;
+  margin-left: 1.5rem;
+  transition: color 0.3s;
+}
+
+.navbar nav a:hover {
+  color: #00bcd4;
+}
+
+/* ===== Hero Section ===== */
+#hero {
+  height: 100vh;
+  width:100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(#0f2027, #203a43, #2c5364);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  padding: 0 2rem;
+  overflow-x: hidden;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #cfcfcf;
+}
+
+/* ==== About Section ==== */
+#about {
+    text-align: center;
+    justify-content: center;
+    max-width: 1000px;
+}
+
+.btn {
+  display: inline-block;
+  background: #00bcd4;
+  color: #0e0e12;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #0097a7;
+}
+
+.btn.small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* ===== Sections ===== */
+section {
+  padding: 6rem 2rem;
+  max-width: 100%;
+  margin: auto;
+}
+
+section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #00bcd4;
+}
+
+
+
+/* ===== Projects ===== */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.project-card {
+  background: #1a1a22;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  background: #23232e;
+}
+
+.project-card h3 {
+  color: #00bcd4;
+  margin-bottom: 1rem;
+}
+
+/* ===== Contact ===== */
+#contact p {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+#contact .btn {
+  display: inline-block;
+  margin: 0 auto;
+  display: block;
+  width: fit-content;
+}
+
+
+
+/* ===== Footer ===== */
+footer {
+  text-align: center;
+  padding: 2rem;
+  background: #14141a;
+  color: #777;
+  font-size: 0.9rem;
+}
