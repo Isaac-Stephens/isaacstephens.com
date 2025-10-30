@@ -1,0 +1,237 @@
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Hack', monospace;
+}
+
+body {
+  background-color: #0e0e12;
+  color: #eaeaea;
+  line-height: 1.6;
+  overflow-x: hidden;
+  padding-top: 80px; 
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  background: rgba(20, 20, 25, 0.8);
+  backdrop-filter: blur(10px);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #00bcd4;
+}
+
+.navbar nav a {
+  color: #eaeaea;
+  text-decoration: none;
+  margin-left: 1.5rem;
+  transition: color 0.3s;
+}
+
+.navbar nav a:hover {
+  color: #00bcd4;
+}
+
+/* ===== Section Defaults ===== */
+.section {
+  max-width: 900px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+}
+
+.section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  color: #00bcd4;
+}
+
+.section p {
+  margin-bottom: 1rem;
+  color: #cfcfcf;
+}
+
+/* ===== Intro Section ===== */
+#intro {
+  background: linear-gradient(#0f2027, #203a43, #2c5364);
+  background-attachment: fixed;
+  padding: 8rem 2rem 6rem;
+  text-align: center;
+  border-radius: 10px;
+}
+
+#intro h1 {
+  font-size: 2.5rem;
+  color: #00bcd4;
+  margin-bottom: 1rem;
+}
+
+#intro p {
+  font-size: 1.1rem;
+  color: #d0d0d0;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ===== Quick Stats ===== */
+#quick-stats {
+  background: rgba(26, 26, 34, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.stats-grid div {
+  background: rgba(20, 20, 25, 0.9);
+  padding: 1.2rem;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.stats-grid div:hover {
+  background: rgba(30, 30, 38, 0.9);
+}
+
+/* ===== Profile Photo ===== */
+.profile-pic {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 3px solid #00bcd4;
+  margin-bottom: 1.5rem;
+  object-fit: contain;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.profile-pic:hover {
+  transform: scale(1.05);
+}
+
+/* ===== Download Resume Button ===== */
+.download-btn {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #00bcd4;
+  color: #00bcd4;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s, color 0.3s;
+}
+
+.download-btn:hover {
+  background: #00bcd4;
+  color: #0e0e12;
+}
+
+
+/* ===== Experience & Projects ===== */
+.experience-item,
+.project-item {
+  background: #1a1a22;
+  padding: 1.5rem 2rem;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.experience-item:hover,
+.project-item:hover {
+  transform: translateY(-5px);
+  background: #23232e;
+}
+
+.experience-item h3,
+.project-item h3 {
+  color: #00bcd4;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== Skills ===== */
+#skills ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+#skills li {
+  background: rgba(26, 26, 34, 0.8);
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+#skills li:hover {
+  background: rgba(35, 35, 45, 0.9);
+}
+
+/* ===== Leadership ===== */
+#leadership ul {
+  list-style: none;
+  padding: 0;
+}
+
+#leadership li {
+  background: rgba(26, 26, 34, 0.8);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+}
+
+/* ===== Personal Section ===== */
+#personal {
+  background: rgba(26, 26, 34, 0.8);
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 800px;
+}
+
+#personal p {
+  color: #cfcfcf;
+  font-size: 1rem;
+}
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center;
+  padding: 2rem 0;
+  background: #14141a;
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: #00bcd4;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer a:hover {
+  color: #0097a7;
+}
