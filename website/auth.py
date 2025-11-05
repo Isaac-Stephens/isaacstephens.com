@@ -148,7 +148,7 @@ def sign_up():
     return render_template("gymman_templates/sign_up.html")
 
 
-# ============================================= Owner View ==============================================
+# ========================================================= Owner View ==========================================================
 @auth.route("/owner/dashboard")
 def owner_dashboard():
     if not is_logged_in("Owner"):
@@ -191,7 +191,7 @@ def owner_errors():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/owner_view/error_logs.html", username=session["username"], name=session["name"])
 
-# ============================================= Staff View ==============================================
+# ========================================================= Staff View =========================================================
 @auth.route("/staff/dashboard")
 def staff_dashboard():
     if not is_logged_in("Staff"):
@@ -222,7 +222,7 @@ def staff_error_logs():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/staff_view/error_logs.html", username=session["username"], name=session["name"])
 
-# ============================================ Trainer View =============================================
+# ========================================================= Trainer View =========================================================
 @auth.route("/trainer/dashboard")
 def trainer_dashboard():
     if not is_logged_in("Trainer"):
@@ -253,7 +253,7 @@ def trainer_reports():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/trainer_view/reports.html", username=session["username"], name=session["name"])
 
-# ============================================= Member View =============================================
+# ========================================================= Member View =========================================================
 @auth.route("/member/dashboard")
 def member_dashboard():
     if not is_logged_in("Member"):
