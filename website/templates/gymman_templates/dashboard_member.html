@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Dashboard | gymman(demo);</title>
+  <link rel="stylesheet" href="../../../static/gymman_styles.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <h2>gymman</h2>
+      <nav>
+        <ul>
+          <li><a href="/member/dashboard" class="active">Dashboard</a></li>
+          <li><a href="/member/profile">My Profile</a></li>
+          <li><a href="/member/membership">My Membership</a></li>
+          <li><a href="/member/workouts">My Workouts</a></li>
+          <li><a href="/member/payments">My Payments</a></li>
+          <li><a href="/member/support">Support</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header>
+        <h1>Welcome {{ username }}!</h1>
+      </header>
+
+      <div class="card-grid">
+  <div class="card">
+    <h3>Membership Type</h3>
+    <p>{{ membership_type }}</p>
+  </div>
+  <div class="card">
+    <h3>Expiration Date</h3>
+    <p>{{ membership_expiry }}</p>
+  </div>
+  <div class="card">
+    <h3>Attendance (This Month)</h3>
+    <p>{{ attendance_count }}</p>
+  </div>
+</div>
+
+<div class="data-table">
+  <h2>Recent Workouts</h2>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Workout</th><th>Duration</th></tr>
+    </thead>
+    <tbody>
+      {% for workout in recent_workouts %}
+      <tr>
+        <td>{{ workout.date }}</td>
+        <td>{{ workout.activity }}</td>
+        <td>{{ workout.duration }} mins</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+    </main>
+
+  </div>
+</body>
+</html>

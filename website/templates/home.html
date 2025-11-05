@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content%}
+<section id="hero">
+    <div class="hero-content">
+        <h1>Hey, I’m Isaac.</h1>
+        <p>
+            A Computer Science student & developer passionate about building efficient, creative software solutions.
+        </p>
+        <a href="#projects" class="btn">View My Work</a>
+    </div>
+</section>
+
+<div id="about"></div>
+<section id="sub">
+    <h2>[ About Me ]</h2>
+    <p>
+        I'm a currently a student at Missouri S&T studying Computer Science with a minor in Computer Engineering & Mathematics.
+        I love working with all things that have to do with computing. Get a load of this guy, what a nerd!
+    </p>
+    <a href="/about-me" class="btn">My Bio</a>
+</section>
+
+<section id="projects">
+    <h2>[ Projects ]</h2>
+    <div class="projects-grid">
+        <div class="project-card">
+            <h3>Gymman</h3>
+            <p>A C++ wxWidgets-based database application for Gym Management. [WIP]</p>
+            <a rel="link" href="https://github.com/Isaac-Stephens/Gym-Manager" class="btn small">View GitHub</a>
+            <a href="/gymman-login" class="btn small">Web Demo</a>
+        </div>
+        <div class="project-card">
+            <h3>Home Server Setup</h3>
+            <p>Self-hosted website using Nginx, Debian, and Cloudflare Tunnels for secure remote access.</p>
+            <a rel="link" href="/my-homelab" class="btn small">View</a>
+        </div>
+    </div>
+</section>
+
+<section id="sub">
+    <div id="contact"></div>
+    <h2>[ Get In Touch ]</h2>
+    <p>Interested in collaborating or just saying hi?</p>
+    <a href="mailto:isaac.stephens1529@gmail.com" class="btn">Email Me</a>
+</section>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gymman (demo)</title>
+  <link rel="stylesheet" href="../../static/gymman_styles.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+</head>
+<body style="background-image: url(../../static/images/pexels-victorfreitas-791763.jpg); background-repeat: no-repeat; background-size: flex;" >
+    <div class="login">
+        <div class="card">
+          <p>
+            This demo is a work in progress. You can log in using one of the following demo accounts:
+            <br><strong>demo_owner</strong>, <strong>demo_staff</strong>, <strong>demo_member</strong>, or <strong>demo_trainer</strong>.
+            <br>Password: <code>pass</code>
+          </p>
+          <p>
+            Certain write functions like member creation/deletion are disabled. Other data queries and views are fully functional.
+          </p>
+        </div>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('auth.login') }}" method="POST">
+          <h2>GymMan</h2>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Enter Username" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Enter Password" required>
+          </div>
+          <button type="submit">Login</button>
+          
+        </form>
+        <div>
+            <h2>New Here?</h2>
+            <a href="/gymman-sign-up">Sign Up</a>
+        </div>
+    </div>
+</body>
+</html>

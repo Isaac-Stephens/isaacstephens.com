@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainer Dashboard | gymman(demo);</title>
+  <link rel="stylesheet" href="../../static/gymman_styles.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <h2>gymman</h2>
+      <nav>
+        <ul>
+          <li><a href="/trainer/dashboard" class="active">Dashboard</a></li>
+          <li><a href="/trainer/clients">My Clients</a></li>
+          <li><a href="/trainer/workouts">Workout Plans</a></li>
+          <li><a href="/trainer/logs">Exercise Logs</a></li>
+          <li><a href="/trainer/reports">Progress Reports</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header>
+        <h1>Welcome Coach {{ username }}!</h1>
+      </header>
+      <div class="card-grid">
+  <div class="card">
+    <h3>Active Clients</h3>
+    <p>{{ active_clients }}</p>
+  </div>
+  <div class="card">
+    <h3>Upcoming Classes</h3>
+    <p>{{ upcoming_classes }}</p>
+  </div>
+  <div class="card">
+    <h3>Completed Sessions</h3>
+    <p>{{ completed_sessions }}</p>
+  </div>
+</div>
+
+<div class="data-table">
+  <h2>Client Progress</h2>
+  <table>
+    <thead>
+      <tr><th>Client</th><th>Goal</th><th>Progress</th><th>Next Session</th></tr>
+    </thead>
+    <tbody>
+      {% for client in clients %}
+      <tr>
+        <td>{{ client.name }}</td>
+        <td>{{ client.goal }}</td>
+        <td>{{ client.progress }}%</td>
+        <td>{{ client.next_session }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+    </main>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard | gymman(demo);</title>
+  <link rel="stylesheet" href="../../static/gymman_styles.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <h2>gymman</h2>
+      <nav>
+        <ul>
+          <li><a href="/staff/dashboard" class="active">Dashboard</a></li>
+          <li><a href="/staff/checkins">Check-in Members</a></li>
+          <li><a href="/staff/payments">Manage Payments</a></li>
+          <li><a href="/staff/memberships">Manage Memberships</a></li>
+          <li><a href="/staff/error_logs">Error Logs</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header>
+        <h1>Hello, {{ username }}!</h1>
+      </header>
+      <div class="form-section">
+  <h2>Member Check-In</h2>
+  <form method="post" action="/checkin">
+    <div class="form-group">
+      <label for="member_search">Member ID or Name</label>
+      <input type="text" id="member_search" name="member_search" placeholder="Search member...">
+    </div>
+    <button type="submit">Check In</button>
+  </form>
+</div>
+
+    </main>
+
+  </div>
+</body>
+</html>
