@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% block title %}<title>Home</title>{% endblock %}
+        <link rel="stylesheet" href="../static/styles.css" />
+        <link rel="stylesheet" href="../static/resume.css" />
+        <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.css">
+    </head>
+    <body>
+        <header class="navbar">
+            <div class="logo">
+                isaacStephens({% block logo %}home{% endblock %})
+            </div>
+            <nav>
+                {% block dir %}
+                <a href="#about">{About}</a>
+                <a href="#projects">{Projects}</a>
+                <a href="#contact">{Contact}</a>
+                {% endblock %}
+            </nav>
+        </header>
+        {% block content %}
+
+        {% endblock %}
+        <footer class="footer">
+      <p><strong>Want to connect?</strong> <a href="mailto:isaac.stephens1529@gmail.com">Email me</a>, check out my <a href="https://github.com/Isaac-Stephens" target="_blank">GitHub</a>, or add me on <a href="https://www.linkedin.com/in/isaacstephens1529/">LinkedIn</a>!</p>
+      <p>© 2025 Isaac Stephens. All rights reserved.</p>
+    </footer>
+    </body>
+</html>
