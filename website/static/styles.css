@@ -160,3 +160,16 @@ footer {
 }
 
 /* . */
+pre {
+  background-color: #1f2531; /* Dark background */
+  color: #d2d9e7; /* Light text color */
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  padding: 1em;
+  border-radius: 5px;
+  overflow: auto; /* Add scrollbars if content overflows */
+}
+
+pre code {
+  display: block; /* Ensure the code block takes up full width */
+  white-space: pre; /* Preserve whitespace and line breaks */
+}
