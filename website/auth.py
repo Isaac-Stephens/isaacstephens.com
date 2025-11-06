@@ -139,7 +139,8 @@ def sign_up():
             INSERT INTO Members (first_name, last_name, email)
             VALUES (%s, %s, %s)
         """, (first_name, last_name, email)) 
-
+        db.commit()
+        
         cursor.close()
         db.close()
         flash('Account created successfully! You can now log in.')
