@@ -235,3 +235,13 @@ body {
 .footer a:hover {
   color: #0097a7;
 }
+
+table, th, td {
+  border: 1px solid;
+  border-collapse: collapse;
+  padding: 8px;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
