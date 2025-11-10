@@ -16,7 +16,6 @@ auth.permanent_session_lifetime = timedelta(minutes=30)
 env_path = os.path.join(os.path.dirname(__file__), "db.env")
 load_dotenv(env_path)
 
-
 # database conn
 def get_db():
     return mysql.connector.connect(
@@ -148,18 +147,122 @@ def sign_up():
 
     return render_template("gymman_templates/sign_up.html")
 
+def checkin():
+    if not (is_logged_in("Owner") or is_logged_in("Staff")):
+        return redirect(url_for("auth.login"))
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # member checkin
+    member_search = request.form.get("member_search", "").strip()
+
+    if not member_search:
+        flash("Please enter a member ID or name.", "error")
+        return redirect(url_for("auth.staff_dashboard"))
+
+    # Try to find member by ID or name
+    cursor.execute(
+        """
+        SELECT * FROM Members
+        WHERE member_id = %s OR CONCAT(first_name, ' ', last_name) LIKE %s
+        """,
+        (member_search, f"%{member_search}%")
+    )
+    member = cursor.fetchone()
+
+    if not member:
+        flash("Member not found.", "error")
+        if is_logged_in("Owner"):
+            return redirect(request.referrer)
+        elif is_logged_in("Staff"):
+            return redirect(request.referrer)
+        else:
+            return redirect(url_for("auth.login"))
+
+    # Log check-in
+    cursor.execute(
+        """
+        INSERT INTO Checkins (member_id, checkin_datetime)
+        VALUES (%s, NOW())
+        """,
+        (member["member_id"],)
+    )
+    db.commit()
+
+    flash(f"{member['first_name']} {member['last_name']} checked in successfully! :)", "success")
+
+    if is_logged_in("Owner"):
+        return redirect(request.referrer)
+    elif is_logged_in("Staff"):
+        return redirect(request.referrer)
+    else:
+        return redirect(url_for("auth.login"))
+    
+
 
 # ========================================================= Owner View ==========================================================
 @auth.route("/owner/dashboard")
 def owner_dashboard():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/dashboard_owner.html", username=session["username"], name=session["name"])
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
 
-@auth.route("/owner/memberships")
+     # total members
+    cursor.execute("SELECT COUNT(*) AS count FROM Members")
+    row = cursor.fetchone()
+    total_members = row["count"] if row and row["count"] is not None else 0
+
+    # pending payments (case-insensitive and NULL-safe)
+    cursor.execute("SELECT COUNT(*) AS count FROM Payments WHERE LOWER(status) = 'pending'")
+    row = cursor.fetchone()
+    pending_payments = row["count"] if row and row["count"] is not None else 0
+
+    # active trainers
+    cursor.execute("SELECT COUNT(*) AS count FROM Trainers WHERE active = 1")
+    row = cursor.fetchone()
+    total_active_trainers = row["count"] if row and row["count"] is not None else 0
+
+    cursor.close()
+    db.close()
+    return render_template("/gymman_templates/dashboard_owner.html", 
+                           username=session["username"], 
+                           name=session["name"],
+                           total_members=total_members,
+                           pending_payments=pending_payments,
+                           total_active_trainers=total_active_trainers)
+
+@auth.route("/owner/memberships", methods=['GET','POST'])
 def owner_memberships():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
+    
+    # checkin member
+    if request.method == 'POST':
+        return checkin()
+    
+    # show recent checkins
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT 
+            c.checkin_id,
+            c.member_id,
+            m.first_name,
+            m.last_name,
+            c.checkin_datetime
+        FROM Checkins AS c
+        JOIN Members AS m ON c.member_id = m.member_id
+        ORDER BY c.checkin_datetime DESC
+        LIMIT 15
+    """)
+    recent_checkins = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+    
     return render_template("/gymman_templates/owner_view/memberships.html", username=session["username"], name=session["name"])
 
 @auth.route("/owner/payments")
@@ -193,17 +296,54 @@ def owner_errors():
     return render_template("/gymman_templates/owner_view/error_logs.html", username=session["username"], name=session["name"])
 
 # ========================================================= Staff View =========================================================
-@auth.route("/staff/dashboard")
+@auth.route("/staff/dashboard", methods=['GET','POST'])
 def staff_dashboard():
     if not is_logged_in("Staff"):
         return redirect(url_for("auth.login"))
+    
+    # checkin member
+    if request.method == 'POST':
+        return checkin()
+
     return render_template("/gymman_templates/dashboard_staff.html", username=session["username"], name=session["name"])
 
-@auth.route("/staff/checkins")
+@auth.route("/staff/checkins", methods=['GET','POST'])
 def staff_checkins():
     if not is_logged_in("Staff"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/staff_view/checkins.html", username=session["username"], name=session["name"])
+    
+    # checkin member
+    if request.method == 'POST':
+        return checkin()
+    
+    # fetch recent check-ins
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT 
+            c.checkin_id,
+            c.member_id,
+            m.first_name,
+            m.last_name,
+            c.checkin_datetime
+        FROM Checkins AS c
+        JOIN Members AS m ON c.member_id = m.member_id
+        ORDER BY c.checkin_datetime DESC
+        LIMIT 15
+    """)
+    recent_checkins = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    # Render page with data
+    return render_template(
+        "/gymman_templates/staff_view/checkins.html",
+        username=session["username"],
+        name=session["name"],
+        recent_checkins=recent_checkins
+    )
 
 @auth.route("/staff/payments")
 def staff_payments():
