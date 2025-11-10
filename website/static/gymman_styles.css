@@ -44,12 +44,15 @@ body {
 
 /* ====== Sidebar ====== */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 240px;
+  height: 100vh; /* full viewport height */
   background-color: #222;
   color: white;
   padding: 1.5rem;
-  position: relative; /* make the sidebar the positioning context */
-  height: 100vh; /* ensures full-height sidebar */
+  overflow-y: auto; /* optional: makes sidebar scrollable if it has a lot of content */
 }
 
 .sidebar h2 {
@@ -104,6 +107,7 @@ body {
 
 /* ====== Main Content ====== */
 .main-content {
+  margin-left: 240px;
   flex: 1;
   padding: 2rem;
 }
@@ -135,6 +139,7 @@ header h1 {
 
 /* ====== Data Table ====== */
 .data-table {
+  margin-top: 2rem;
   background: white;
   border-radius: 10px;
   padding: 1.5rem;

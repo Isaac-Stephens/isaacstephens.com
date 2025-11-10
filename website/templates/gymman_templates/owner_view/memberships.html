@@ -11,4 +11,56 @@
 {% endblock %}
 {% block content %} 
 
+<!-- ====== Check-in Members ====== -->
+<div class="form-section">
+    <h2>Member Check-In</h2>
+    <form method="post" action="{{ url_for('auth.owner_memberships') }}">
+        <div class="form-group">
+            <label for="member_search">Member ID or Name</label>
+            <input type="text" id="member_search" name="member_search" placeholder="Search member...">
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                  <div class="flash">
+                    {% for message in messages %}
+                      <p>{{ message }}</p>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endwith %}
+        </div>
+        <button type="submit">Check In</button>
+    </form>
+        
+</div>
+
+<!-- ====== Recent Check-ins Table ====== -->
+<div class="data-table">
+  <h2>Recent Check-Ins</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Check-In ID</th>
+        <th>Member Name</th>
+        <th>Member ID</th>
+        <th>Date & Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if recent_checkins %}
+        {% for record in recent_checkins %}
+          <tr>
+            <td>{{ record.checkin_id }}</td>
+            <td>{{ record.first_name }} {{ record.last_name }}</td>
+            <td>{{ record.member_id }}</td>
+            <td>{{ record.checkin_datetime }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" style="text-align: center;">No check-ins found.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
