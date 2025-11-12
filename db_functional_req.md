@@ -147,10 +147,10 @@ cardio_id.
 ## P. Reporting and UI behavior suggestions
 1. Provide simple UI pages or dialogs for:
    - Add/Edit/Delete Member
-  - Add/Edit/Delete Exercise
-  - Assign/Unassign Trainer to Member
-  - Add Payment
-  - Reports: Payments, Trainer Clients, Exercise History, Aggregates (avg RPE, total revenue)
+   - Add/Edit/Delete Exercise
+   - Assign/Unassign Trainer to Member
+   - Add Payment
+   - Reports: Payments, Trainer Clients, Exercise History, Aggregates (avg RPE, total revenue)
 2. For each report allow filters (date range, member, trainer, exercise type).
 3. Always show loading feedback during long queries and confirm dialogs before delete actions.
 ## Q. Error handling & logging
