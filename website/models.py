@@ -99,4 +99,40 @@ def db_showRecentCheckIns(num_shown=15):
     db.close()
     return checkins
 
-#
+# member lookup function:
+def db_memberLookUp(member):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+  
+    cursor.execute(""" 
+        SELECT m.member_id, m.first_name, m.last_name, m.email, m.birth_date,
+               m.membership_start_date, p.phone_number,
+               CONCAT(e.first_name, ' ', e.last_name) AS emergency_contact_name,
+               e.phone_number AS emergency_contact_phone
+        FROM Members m
+        LEFT JOIN PhoneNumbers p ON m.member_id = p.member_id
+        LEFT JOIN EmergencyContacts e ON m.member_id = e.member_id
+        WHERE m.member_id = %s OR m.first_name LIKE %s OR m.last_name LIKE %s
+    """, (member, f"%{member}%", f"%{member}%"))
+    lookup = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return lookup
+
+def db_showAllMembers():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT m.member_id, CONCAT(m.first_name, ' ', m.last_name) AS name, 
+               p.phone_number, m.email, m.birth_date, m.membership_start_date
+        FROM Members m
+        LEFT JOIN PhoneNumbers p ON m.member_id = p.member_id
+    """)
+    members = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return members
+
+def db_():
+    return

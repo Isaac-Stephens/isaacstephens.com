@@ -6,7 +6,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
 from .models import (get_db, db_findMember, db_logCheckin, db_getNumTotalMembers, 
-                     db_getNumPendingPayments, db_getNumActiveTrainers, db_showRecentCheckIns)
+                     db_getNumPendingPayments, db_getNumActiveTrainers, db_showRecentCheckIns,
+                     db_memberLookUp, db_showAllMembers)
 
 auth = Blueprint('auth', __name__)
 auth.permanent_session_lifetime = timedelta(minutes=30)
@@ -137,37 +138,26 @@ def checkin():
     if not (is_logged_in("Owner") or is_logged_in("Staff")):
         return redirect(url_for("auth.login"))
 
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    # member checkin
     member_search = request.form.get("member_search", "").strip()
 
+    # No input provided
     if not member_search:
         flash("Please enter a member ID or name.", "error")
-        return redirect(url_for("auth.staff_dashboard"))
+        return redirect(request.referrer)
 
+    # Lookup member
     member = db_findMember(member_search)
 
+    # Member not found
     if not member:
         flash("Member not found.", "error")
-        if is_logged_in("Owner"):
-            return redirect(request.referrer)
-        elif is_logged_in("Staff"):
-            return redirect(request.referrer)
-        else:
-            return redirect(url_for("auth.login"))
+        return redirect(request.referrer)
 
+    # Log check-in
     db_logCheckin(member)
 
-    flash(f"{member['first_name']} {member['last_name']} checked in successfully! :)", "success")
-
-    if is_logged_in("Owner"):
-        return redirect(request.referrer)
-    elif is_logged_in("Staff"):
-        return redirect(request.referrer)
-    else:
-        return redirect(url_for("auth.login"))
+    flash(f"{member['first_name']} {member['last_name']} checked in successfully!", "success")
+    return redirect(request.referrer)
 
 # ========================================================= Owner View ==========================================================
 @auth.route("/owner/dashboard")
@@ -191,16 +181,37 @@ def owner_memberships():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
     
-    # checkin member
+    member_lookup = None
+    num_shown = session.get("num_checkins_shown", 15)
+
     if request.method == 'POST':
-        return checkin()
-    
-    recent_checkins = db_showRecentCheckIns()
+        # If "Load More" is pressed, increment by 5
+        if 'load_more' in request.form:
+            num_shown += 5
+            session["num_checkins_shown"] = num_shown
+        elif 'lookup' in request.form:
+            member_lookup = db_memberLookUp(request.form.get('member_search', '').strip())
+            if not member_lookup:
+                flash("Member not found :(")
+        elif 'checkin' in request.form:
+            # If this POST was for a check-in action
+            return checkin()
+        else:
+            return redirect(request.referrer)
+
+    # Fetch Member List
+    member_list = db_showAllMembers()
+
+    # Fetch recent check-ins
+    recent_checkins = db_showRecentCheckIns(num_shown)
     
     return render_template("/gymman_templates/owner_view/memberships.html", 
                            username=session["username"], 
                            name=session["name"],
-                           recent_checkins=recent_checkins)
+                           recent_checkins=recent_checkins,
+                           num_shown=num_shown,
+                           member_lookup=member_lookup,
+                           member_list=member_list)
 
 @auth.route("/owner/payments")
 def owner_payments():
@@ -249,17 +260,26 @@ def staff_checkins():
     if not is_logged_in("Staff"):
         return redirect(url_for("auth.login"))
     
-    # checkin member
+    num_shown = session.get("num_checkins_shown", 15)
+
     if request.method == 'POST':
-        return checkin()
-    
-    recent_checkins = db_showRecentCheckIns()
+        # If "Load More" is pressed, increment by 5
+        if 'load_more' in request.form:
+            num_shown += 5
+            session["num_checkins_shown"] = num_shown
+        else:
+            # If this POST was for a check-in action
+            return checkin()
+
+    # Fetch recent check-ins
+    recent_checkins = db_showRecentCheckIns(num_shown)
 
     return render_template(
         "/gymman_templates/staff_view/checkins.html",
         username=session["username"],
         name=session["name"],
-        recent_checkins=recent_checkins)
+        recent_checkins=recent_checkins,
+        num_shown=num_shown)
 
 @auth.route("/staff/payments")
 def staff_payments():
