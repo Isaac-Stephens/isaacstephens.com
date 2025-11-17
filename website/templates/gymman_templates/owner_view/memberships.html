@@ -12,55 +12,134 @@
 {% block content %} 
 
 <!-- ====== Check-in Members ====== -->
-<div class="form-section">
-    <h2>Member Check-In</h2>
-    <form method="post" action="{{ url_for('auth.owner_memberships') }}">
-        <div class="form-group">
-            <label for="member_search">Member ID or Name</label>
-            <input type="text" id="member_search" name="member_search" placeholder="Search member...">
-              {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                  <div class="flash">
-                    {% for message in messages %}
-                      <p>{{ message }}</p>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              {% endwith %}
-        </div>
-        <button type="submit">Check In</button>
-    </form>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+<div class="card-grid">
+  <div class="card">
+    <div class="form-section">
+      <h2>Member Lookup</h2>
+      <form method="post" action="">
+          <div class="form-group">
+              <label for="member_search">Member ID or Name</label>
+              <input type="text" id="member_search" name="member_search" placeholder="Search member...">
+                
+          </div>
+          <button type="submit" name="lookup">Lookup</button>
+          <table>
+            <thead>
+              <th>Member ID</th>
+              <th>Member Name</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>Birthday</th>
+              <th>Start Date</th>
+              <th>Emergency Contact Name</th>
+              <th>Emergency Contact Phone Number</th>
+            </thead>
+            <tbody>
+              {% if member_lookup %}
+                {% for record in member_lookup %}
+                  <tr>
+                    <td>{{ record.member_id }}</td>
+                    <td>{{ record.first_name }} {{ record.last_name }}</td>
+                    <td>{{ record.email }}</td>
+                    <td>{{ record.phone_number }}</td>
+                    <td>{{ record.birth_date }}</td>
+                    <td>{{ record.membership_start_date }}</td>
+                    <td>{{ record.emergency_contact_name }}</td>
+                    <td>{{ record.emergency_contact_phone }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" style="text-align: center;">No member found.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+      </form>
+    </div>
+    <div class="data-table">
+      <h2>Active Memberships</h2>
+      <table>
+        <thread>
+          <th>Member ID</th>
+          <th>Member Name</th>
+          <th>Phone</th>
+          <th>E-Mail</th>
+          <th>Birthday</th>
+          <th>Start Date</th>
+        </thread>
+        <tbody>
+          {% for member in member_list %}
+            <tr>
+              <td>{{ member.member_id }}</td>
+              <td>{{ member.name }}</td>
+              <td>{{ member.phone_number }}</td>
+              <td>{{ member.email }}</td>
+              <td>{{ member.birth_date }}</td>
+              <td>{{ member.membership_start_date }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="form-section">
+      <h2>Member Check-In</h2>
+      <form method="post" action="{{ url_for('auth.owner_memberships') }}">
+          <div class="form-group">
+              <label for="member_search">Member ID or Name</label>
+              <input type="text" id="member_search" name="member_search" placeholder="Search member...">
+          </div>
+          <button type="submit" name="checkin">Check In</button>
+      </form>
         
-</div>
+    </div>
 
-<!-- ====== Recent Check-ins Table ====== -->
-<div class="data-table">
-  <h2>Recent Check-Ins</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Check-In ID</th>
-        <th>Member Name</th>
-        <th>Member ID</th>
-        <th>Date & Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if recent_checkins %}
-        {% for record in recent_checkins %}
+    <!-- ====== Recent Check-ins Table ====== -->
+    <div class="data-table">
+      <h2>Recent Check-Ins</h2>
+      <table>
+        <thead>
           <tr>
-            <td>{{ record.checkin_id }}</td>
-            <td>{{ record.first_name }} {{ record.last_name }}</td>
-            <td>{{ record.member_id }}</td>
-            <td>{{ record.checkin_datetime }}</td>
+            <th>Check-In ID</th>
+            <th>Member Name</th>
+            <th>Member ID</th>
+            <th>Date & Time</th>
           </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="4" style="text-align: center;">No check-ins found.</td>
-        </tr>
-      {% endif %}
-    </tbody>
-  </table>
+        </thead>
+        <tbody>
+          {% if recent_checkins %}
+            {% for record in recent_checkins %}
+              <tr>
+                <td>{{ record.checkin_id }}</td>
+                <td>{{ record.first_name }} {{ record.last_name }}</td>
+                <td>{{ record.member_id }}</td>
+                <td>{{ record.checkin_datetime }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="4" style="text-align: center;">No check-ins found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+      <form action="" method="post">
+        <button type="submit" name="load_more">Load More</button>
+      </form>
+    </div>
+  </div>
+  
+  
 </div>
 {% endblock %}
