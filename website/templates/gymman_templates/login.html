@@ -9,6 +9,15 @@
 </head>
 <body style="background-image: url(../../static/images/pexels-victorfreitas-791763.jpg); background-repeat: no-repeat; background-size: flex;" >
     <div class="login">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
         <div class="card">
           <p>
             This demo is a work in progress. You can log in using one of the following demo accounts:
@@ -19,15 +28,6 @@
             Certain write functions like member creation/deletion are disabled. Other data queries and views are fully functional.
           </p>
         </div>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="flash">
-              {% for message in messages %}
-                <p>{{ message }}</p>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
         <form action="{{ url_for('auth.login') }}" method="POST">
           <h2>GymMan</h2>
           <div class="form-group">
