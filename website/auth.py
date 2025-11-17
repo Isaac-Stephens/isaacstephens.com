@@ -40,10 +40,18 @@ def login():
 
             session["user_id"] = user["user_id"]
             session["username"] = user["username"]
-            session["role"] = user["role_name"]
+            if user["role_id"] == 1:
+                session["role"] = "owner"
+            elif user["role_id"] == 2:
+                session["role"] = "staff"
+            elif user["role_id"] == 4:
+                session["role"] = "trainer"
+            else:
+                session["role"] = "member"
             session["name"] = user["first_name"] + ' ' +user["last_name"]
 
-            role = user["role_name"].lower()
+            
+            role = session["role"]
 
             # Redirect the user to their role-specific dashboard
             if role == "owner":
@@ -115,9 +123,9 @@ def sign_up():
         # insert new user
         hashed_pw = generate_password_hash(password)
         cursor.execute("""
-            INSERT INTO users (first_name, last_name, email, username, password_hash, role_name)
+            INSERT INTO users (first_name, last_name, email, username, password_hash, role_id)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (first_name, last_name, email, username, hashed_pw, 'Member'))
+        """, (first_name, last_name, email, username, hashed_pw, 3))
         db.commit()
 
         # add user to members list, birth date, membership start date, and sex should all be added from either the member's profile view or the owner/staff's memberships view

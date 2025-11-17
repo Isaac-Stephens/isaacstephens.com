@@ -90,7 +90,7 @@ def db_showRecentCheckIns(num_shown=15):
             c.checkin_datetime
         FROM Checkins AS c
         JOIN Members AS m ON c.member_id = m.member_id
-        ORDER BY c.checkin_datetime DESC
+        ORDER BY c.checkin_id DESC
         LIMIT {int(num_shown)}
     """
     cursor.execute(query)
@@ -112,8 +112,10 @@ def db_memberLookUp(member):
         FROM Members m
         LEFT JOIN PhoneNumbers p ON m.member_id = p.member_id
         LEFT JOIN EmergencyContacts e ON m.member_id = e.member_id
-        WHERE m.member_id = %s OR m.first_name LIKE %s OR m.last_name LIKE %s
-    """, (member, f"%{member}%", f"%{member}%"))
+        WHERE m.member_id = %s OR m.first_name LIKE %s OR m.last_name LIKE %s 
+                               OR CONCAT(m.first_name, ' ', m.last_name) LIKE %s 
+                               OR CONCAT(m.last_name, ' ', m.first_name) LIKE %s
+    """, (member, f"%{member}%", f"%{member}%", f"%{member}%", f"%{member}%"))
     lookup = cursor.fetchall()
     cursor.close()
     db.close()
