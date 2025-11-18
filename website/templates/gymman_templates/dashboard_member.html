@@ -33,37 +33,37 @@
       </header>
 
       <div class="card-grid">
-  <div class="card">
-    <h3>Membership Type</h3>
-    <p>{{ membership_type }}</p>
-  </div>
-  <div class="card">
-    <h3>Expiration Date</h3>
-    <p>{{ membership_expiry }}</p>
-  </div>
-  <div class="card">
-    <h3>Attendance (This Month)</h3>
-    <p>{{ attendance_count }}</p>
-  </div>
-</div>
+        <div class="card">
+          <h3>Membership Type</h3>
+          <p>{{ membership_type }}</p>
+        </div>
+        <div class="card">
+          <h3>Expiration Date</h3>
+          <p>{{ membership_expiry }}</p>
+        </div>
+        <div class="card">
+          <h3>Attendance (This Month)</h3>
+          <p>{{ attendance_count }}</p>
+        </div>
+      </div>
 
-<div class="data-table">
-  <h2>Recent Workouts</h2>
-  <table>
-    <thead>
-      <tr><th>Date</th><th>Workout</th><th>Duration</th></tr>
-    </thead>
-    <tbody>
-      {% for workout in recent_workouts %}
-      <tr>
-        <td>{{ workout.date }}</td>
-        <td>{{ workout.activity }}</td>
-        <td>{{ workout.duration }} mins</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+      <div class="data-table">
+        <h2>Recent Workouts</h2>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Workout</th><th>Duration</th></tr>
+          </thead>
+          <tbody>
+            {% for workout in recent_workouts %}
+            <tr>
+              <td>{{ workout.date }}</td>
+              <td>{{ workout.activity }}</td>
+              <td>{{ workout.duration }} mins</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </main>
 
   </div>

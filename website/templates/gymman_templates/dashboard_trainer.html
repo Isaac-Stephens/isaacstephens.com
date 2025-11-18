@@ -31,41 +31,39 @@
         <h1>Welcome Coach {{ name }}!</h1>
       </header>
       <div class="card-grid">
-  <div class="card">
-    <h3>Active Clients</h3>
-    <p>{{ active_clients }}</p>
-  </div>
-  <div class="card">
-    <h3>Upcoming Classes</h3>
-    <p>{{ upcoming_classes }}</p>
-  </div>
-  <div class="card">
-    <h3>Completed Sessions</h3>
-    <p>{{ completed_sessions }}</p>
-  </div>
-</div>
+        <div class="card">
+          <h3>Active Clients</h3>
+          <p>{{ active_clients }}</p>
+        </div>
+        <div class="card">
+          <h3>Upcoming Classes</h3>
+          <p>{{ upcoming_classes }}</p>
+        </div>
+        <div class="card">
+          <h3>Completed Sessions</h3>
+          <p>{{ completed_sessions }}</p>
+        </div>
+      </div>
 
-<div class="data-table">
-  <h2>Client Progress</h2>
-  <table>
-    <thead>
-      <tr><th>Client</th><th>Goal</th><th>Progress</th><th>Next Session</th></tr>
-    </thead>
-    <tbody>
-      {% for client in clients %}
-      <tr>
-        <td>{{ client.name }}</td>
-        <td>{{ client.goal }}</td>
-        <td>{{ client.progress }}%</td>
-        <td>{{ client.next_session }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
+      <div class="data-table">
+        <h2>Client Progress</h2>
+        <table>
+          <thead>
+            <tr><th>Client</th><th>Goal</th><th>Progress</th><th>Next Session</th></tr>
+          </thead>
+          <tbody>
+            {% for client in clients %}
+            <tr>
+              <td>{{ client.name }}</td>
+              <td>{{ client.goal }}</td>
+              <td>{{ client.progress }}%</td>
+              <td>{{ client.next_session }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </main>
-
   </div>
 </body>
 </html>

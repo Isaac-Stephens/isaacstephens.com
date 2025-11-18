@@ -36,37 +36,37 @@
       </header>
 
       <div class="card-grid">
-  <div class="card">
-    <h3>Total Members</h3>
-    <p>{{ total_members }}</p>
-  </div>
-  <div class="card">
-    <h3>Active Trainers</h3>
-    <p>{{ total_active_trainers }}</p>
-  </div>
-  <div class="card">
-    <h3>Pending Payments</h3>
-    <p>{{ pending_payments }}</p>
-  </div>
-</div>
+        <div class="card">
+          <h3>Total Members</h3>
+          <p>{{ total_members }}</p>
+        </div>
+        <div class="card">
+          <h3>Active Trainers</h3>
+          <p>{{ total_active_trainers }}</p>
+        </div>
+        <div class="card">
+          <h3>Pending Payments</h3>
+          <p>{{ pending_payments }}</p>
+        </div>
+      </div>
 
-<div class="data-table">
-  <h2>Recent Activity</h2>
-  <table>
-    <thead>
-      <tr><th>Date</th><th>Action</th><th>User</th></tr>
-    </thead>
-    <tbody>
-      {% for log in recent_logs %}
-      <tr>
-        <td>{{ log.date }}</td>
-        <td>{{ log.action }}</td>
-        <td>{{ log.user }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+      <div class="data-table">
+        <h2>Recent Activity</h2>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Action</th><th>User</th></tr>
+          </thead>
+          <tbody>
+            {% for log in recent_logs %}
+            <tr>
+              <td>{{ log.date }}</td>
+              <td>{{ log.action }}</td>
+              <td>{{ log.user }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
     </main>
 

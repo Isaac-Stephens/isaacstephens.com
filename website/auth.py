@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
 from .models import (get_db, db_findMember, db_logCheckin, db_getNumTotalMembers, 
                      db_getNumPendingPayments, db_getNumActiveTrainers, db_showRecentCheckIns,
-                     db_memberLookUp, db_showAllMembers)
+                     db_memberLookUp, db_showAllMembers, db_showTrainerClientRel)
 
 auth = Blueprint('auth', __name__)
 auth.permanent_session_lifetime = timedelta(minutes=30)

@@ -136,5 +136,20 @@ def db_showAllMembers():
     db.close()
     return members
 
-def db_():
-    return
+def db_showTrainerClientRel():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT
+            CONCAT(s.first_name, ' ', s.last_name) AS trainer,
+            CONCAT(m.first_name, ' ', m.last_name) AS client,
+            tc.notes, tc.client_start_date, tc.client_end_date
+        FROM
+            TrainerClients AS tc
+            LEFT JOIN Staff AS s ON tc.trainer_id = s.staff_id
+            LEFT JOIN Members AS m ON tc.member_id = m.member_id
+    """)
+    trainerClients = cursor.fetchall
+    cursor.close()
+    db.close()
+    return trainerClients

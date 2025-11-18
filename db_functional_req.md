@@ -1,3 +1,24 @@
+|   | Description                                            | Owner                          | Staff                       | Trainer                           | Member      |
+|---|--------------------------------------------------------|--------------------------------|-----------------------------|-----------------------------------|-------------|
+| A | Add a new Member                                       | Manage Memberships             | Manage Memberships          |                                   |             |
+| B | Update Member Information                              | Manage Memberships             | Manage Memberships          |                                   |             |
+| C | Delete a Member                                        | Manage Memberships             |                             |                                   |             |
+| D | Add a Payment for a Member                             | Manage Payments                | Manage Payments             |                                   | My Payments |
+| E | Regeister Staff/Trainer                                | Manage Staff / Manage Trainers |                             |                                   |             |
+| F | Assign Trainer to a Member                             | Manage Trainers                | Manage Memberships          | My Clients                        |             |
+| G | Log an Exercise for a member                           | Exercise Logs                  |                             | Exercise Logs / Workout Plans     | My Workouts |
+| H | Modify an exercise record                              | Exercise Logs                  |                             | Exercise Logs / Workout Plans     | My Workouts |
+| I | Delete an exercise                                     | Exercise Logs                  |                             | Exercise Logs / Workout Plans     | My Workouts |
+| J | Get exercises for a specific member (Exercise History) | Exercise Logs                  |                             | Exercise Logs / My Clients        | My Workouts |
+| K | List Clients for a Trainer                             | Manage Trainers                | Manage Memberships          | My Clients                        |             |
+| L | Aggregation: Total Payments/Revenue                    | Manage Payments / Dashboard    | Manage Payments / Dashboard |                                   | My Payments |
+| M | Aggregation: Average RPE                               | Exercise Logs                  |                             | Exercise Logs / Progress Reports  | My Workouts |
+| N | Aggregation: Max Weight Lifted By a Member             | Exercise Logs                  |                             | Exercise Logs / Progress Reports  | My Workouts |
+| O | Aggregation: Average Run Distance                      | Exercise Logs                  |                             | Exercise Logs / Progress Reports  | My Workouts |
+| P | Reports and UI Behavior                                |                                |                             |                                   |             |
+| Q | Error Handling and Visibility                          | Error Logs (ALL)               | Error Logs                  |                                   |             |
+
+
 # Application Program Design
 General notes (common to all functions)
 1. Always open a database connection at the start of an operation and close it at the end.
