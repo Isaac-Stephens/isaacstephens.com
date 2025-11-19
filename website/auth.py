@@ -1,20 +1,29 @@
-# --------------------------------------------
-# Authorized views for gymman web demo
-# --------------------------------------------
+# ======================================================================= #
+#                            GYMMAN: AUTH PATHS                           #
+#                          Author: Isaac Stephens                         #
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+#          Junior, Computer Science, CS Department, Missouri S&T          #
+#              issq3r@mst.edu || isaac.stephens1529@gmail.com             #
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+# This file (auth.py) contains the majority of the backend functionality  #
+# for the GymMan Demo site. All routes and verifications happen here.     #
+#                                                                         #
+# A live web demo can be found @ https://isaacstephens.com/gymman-login.  #
+# ======================================================================= #
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
 from .models import (get_db, db_findMember, db_logCheckin, db_getNumTotalMembers, 
                      db_getNumPendingPayments, db_getNumActiveTrainers, db_showRecentCheckIns,
-                     db_memberLookUp, db_showAllMembers, db_showTrainerClientRel)
+                     db_memberLookUp, db_showAllMembers, db_showTrainerClientRel, 
+                     db_showTrainerClients)
 
 auth = Blueprint('auth', __name__)
 auth.permanent_session_lifetime = timedelta(minutes=30)
 
 def is_logged_in(required_role=None):
     """Verify user session and optional role."""
-
     if "user_id" not in session:
         return False
     if required_role and session.get("role", "").lower() != required_role.lower():
@@ -26,18 +35,13 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-
         db = get_db()
-
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))       
         user = cursor.fetchone()
-
         if user and check_password_hash(user["password_hash"], password):
             session.clear()
             session.permanent = True
-
             session["user_id"] = user["user_id"]
             session["username"] = user["username"]
             if user["role_id"] == 1:
@@ -48,11 +52,8 @@ def login():
                 session["role"] = "trainer"
             else:
                 session["role"] = "member"
-            session["name"] = user["first_name"] + ' ' +user["last_name"]
-
-            
+            session["name"] = user["first_name"] + ' ' +user["last_name"]           
             role = session["role"]
-
             # Redirect the user to their role-specific dashboard
             if role == "owner":
                 cursor.close()
@@ -74,14 +75,12 @@ def login():
                 flash("Unknown role.")
                 cursor.close()
                 db.close()
-                return redirect(url_for("auth.login"))
-            
+                return redirect(url_for("auth.login"))         
         else:
             cursor.close()
             db.close()
             flash("Invalid credentials. Username or Password is incorrect.")
-            return redirect(url_for("auth.login"))
-        
+            return redirect(url_for("auth.login"))       
     #if request was GET, load
     return render_template("gymman_templates/login.html")
 
@@ -102,15 +101,12 @@ def sign_up():
         username = request.form['username']
         password = request.form['password']
         password_repeat = request.form['password_repeat']
-
         # validation
         if password != password_repeat:
             flash('Passwords do not match.')
-            return redirect(url_for('auth.sign_up'))
-        
+            return redirect(url_for('auth.sign_up'))      
         db = get_db()
         cursor = db.cursor(dictionary=True)
-
         # check if username OR email already exists
         cursor.execute("SELECT * FROM users WHERE username = %s OR email = %s", (username, email))
         existing_user = cursor.fetchone()
@@ -118,8 +114,7 @@ def sign_up():
             flash('Username or email already exists.')
             cursor.close()
             db.close()
-            return redirect(url_for('auth.sign_up'))
-        
+            return redirect(url_for('auth.sign_up'))      
         # insert new user
         hashed_pw = generate_password_hash(password)
         cursor.execute("""
@@ -127,47 +122,40 @@ def sign_up():
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (first_name, last_name, email, username, hashed_pw, 3))
         db.commit()
-
         # add user to members list, birth date, membership start date, and sex should all be added from either the member's profile view or the owner/staff's memberships view
         cursor.execute("""
             INSERT INTO Members (first_name, last_name, email)
             VALUES (%s, %s, %s)
         """, (first_name, last_name, email)) 
-        db.commit()
-        
+        db.commit()     
         cursor.close()
         db.close()
         flash('Account created successfully! You can now log in.')
         return redirect(url_for('auth.login'))
-
     return render_template("gymman_templates/sign_up.html")
 
 def checkin():
     if not (is_logged_in("Owner") or is_logged_in("Staff")):
         return redirect(url_for("auth.login"))
-
     member_search = request.form.get("member_search", "").strip()
-
     # No input provided
     if not member_search:
         flash("Please enter a member ID or name.", "error")
         return redirect(request.referrer)
-
     # Lookup member
     member = db_findMember(member_search)
-
     # Member not found
     if not member:
         flash("Member not found.", "error")
         return redirect(request.referrer)
-
     # Log check-in
     db_logCheckin(member)
-
     flash(f"{member['first_name']} {member['last_name']} checked in successfully!", "success")
     return redirect(request.referrer)
 
-# ========================================================= Owner View ==========================================================
+# +++++++++++++++++++++++++++++++++++
+# =========== Owner Views ===========
+# +++++++++++++++++++++++++++++++++++
 @auth.route("/owner/dashboard")
 def owner_dashboard():
     if not is_logged_in("Owner"):
@@ -251,7 +239,9 @@ def owner_errors():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/owner_view/error_logs.html", username=session["username"], name=session["name"])
 
-# ========================================================= Staff View =========================================================
+# +++++++++++++++++++++++++++++++++++
+# =========== Staff Views ===========
+# +++++++++++++++++++++++++++++++++++
 @auth.route("/staff/dashboard", methods=['GET','POST'])
 def staff_dashboard():
     if not is_logged_in("Staff"):
@@ -307,7 +297,9 @@ def staff_error_logs():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/staff_view/error_logs.html", username=session["username"], name=session["name"])
 
-# ========================================================= Trainer View =========================================================
+# +++++++++++++++++++++++++++++++++++++
+# =========== Trainer Views ===========
+# +++++++++++++++++++++++++++++++++++++
 @auth.route("/trainer/dashboard")
 def trainer_dashboard():
     if not is_logged_in("Trainer"):
@@ -318,7 +310,25 @@ def trainer_dashboard():
 def trainer_clients():
     if not is_logged_in("Trainer"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/trainer_view/clients.html", username=session["username"], name=session["name"])
+    name = session['name'].lower()
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT tc.trainer_id FROM TrainerClients AS tc 
+        JOIN Staff AS s ON tc.trainer_id = s.staff_id 
+        WHERE CONCAT(s.first_name, ' ', s.last_name) LIKE %s
+    """, (f"%{name}%",))
+    row = cursor.fetchone()
+    trainer_id = row["trainer_id"] if row else None
+    trainer_clients = db_showTrainerClients(trainer_id)
+    
+    cursor.close()
+    db.close()
+    return render_template(
+        "/gymman_templates/trainer_view/clients.html", 
+        username=session["username"], 
+        name=name, 
+        trainer_clients=trainer_clients)
 
 @auth.route("/trainer/workouts")
 def trainer_workouts():
@@ -338,7 +348,9 @@ def trainer_reports():
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/trainer_view/reports.html", username=session["username"], name=session["name"])
 
-# ========================================================= Member View =========================================================
+# ++++++++++++++++++++++++++++++++++++
+# =========== Member Views ===========
+# ++++++++++++++++++++++++++++++++++++
 @auth.route("/member/dashboard")
 def member_dashboard():
     if not is_logged_in("Member"):
@@ -374,3 +386,5 @@ def member_support():
     if not is_logged_in("Member"):
         return redirect(url_for("auth.login"))
     return render_template("/gymman_templates/member_view/support.html", username=session["username"], name=session["name"])
+
+# --o-o- EOF
