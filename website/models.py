@@ -1,7 +1,16 @@
-# --------------------------------------------
-# Database models for gymman web demo. auth.py
-# was getting wayyyy too long lol
-# --------------------------------------------
+# ======================================================================= #
+#                           GYMMAN: QUERY MODELS                          #
+#                          Author: Isaac Stephens                         #
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+#          Junior, Computer Science, CS Department, Missouri S&T          #
+#              issq3r@mst.edu || isaac.stephens1529@gmail.com             #
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
+# This file (models.py) contains the majority of the SQL query models for #
+# auth.py, which was becoming increasingly hard to read with all the SQL  #
+# in the routes.                                                          #
+#                                                                         #
+# A live web demo can be found @ https://isaacstephens.com/gymman-login.  #
+# ======================================================================= #
 
 import mysql.connector
 import os
@@ -18,7 +27,10 @@ def get_db():
         database=os.getenv("DB_NAME")
     )
 
-# find member for checkin
+# find a member's information
+# [only the row from the Member's table, for accompanying 
+# inforation (ie. PhoneNumber, EmergencyContact, etc...)
+# use db_memberLookup.] (owner/staff/trainer)
 def db_findMember(member_search):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -30,9 +42,11 @@ def db_findMember(member_search):
         """,
         (member_search, f"%{member_search}%")
     )
-    return cursor.fetchone()
+    row = cursor.fetchone()
+    cursor.close()
+    return row
 
-# log member in checkin table
+# log member in checkin table (owner/staff)
 def db_logCheckin(member):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -47,7 +61,7 @@ def db_logCheckin(member):
     cursor.close()
     db.close()
 
-# return total member count
+# return total member count (owner/staff)
 def db_getNumTotalMembers():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -57,7 +71,7 @@ def db_getNumTotalMembers():
     db.close()
     return row["count"] if row and row["count"] is not None else 0
 
-# return num pending payments
+# return num pending payments (owner)
 def db_getNumPendingPayments():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -67,7 +81,7 @@ def db_getNumPendingPayments():
     db.close()
     return row["count"] if row and row["count"] is not None else 0
 
-# return num active trainers
+# return num active trainers (owner/staff)
 def db_getNumActiveTrainers():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -77,7 +91,7 @@ def db_getNumActiveTrainers():
     db.close()
     return row["count"] if row and row["count"] is not None else 0
 
-# returns num_shown most recent checkins 
+# returns num_shown most recent checkins (owner/staff)
 def db_showRecentCheckIns(num_shown=15):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -99,7 +113,7 @@ def db_showRecentCheckIns(num_shown=15):
     db.close()
     return checkins
 
-# member lookup function:
+# member lookup function (owner/staff/trainer)
 def db_memberLookUp(member):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -121,6 +135,7 @@ def db_memberLookUp(member):
     db.close()
     return lookup
 
+# returns a table of all memberships (owner/staff)
 def db_showAllMembers():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -136,6 +151,7 @@ def db_showAllMembers():
     db.close()
     return members
 
+# returns a table of ALL trainer client relationships (owner)
 def db_showTrainerClientRel():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -149,7 +165,58 @@ def db_showTrainerClientRel():
             LEFT JOIN Staff AS s ON tc.trainer_id = s.staff_id
             LEFT JOIN Members AS m ON tc.member_id = m.member_id
     """)
+    trainerClients = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return trainerClients
+
+# returns a table of clients from a SPECIFIC trainer (trainer)
+def db_showTrainerClients(trainerID):
+    if trainerID is None:
+        return []
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT
+            CONCAT(m.first_name, ' ', m.last_name) AS client,
+            tc.notes, tc.client_start_date, tc.client_end_date
+        FROM
+            TrainerClients AS tc
+            LEFT JOIN Members AS m ON tc.member_id = m.member_id
+        WHERE 
+            tc.trainer_id = %s
+    """, (trainerID))
     trainerClients = cursor.fetchall
     cursor.close()
     db.close()
     return trainerClients
+
+# add a new member and create their user (owner/staff)
+
+# update a member's information (owner/staff)
+
+# delete a member (owner)
+
+# add a payment for a member (owner/staff/member) 
+
+# register staff / trainer (owner)
+
+# assign trainer to a member (owner/staff/trainer)
+
+# log an exercise for a member (owner/trainer/member)
+
+# modify and exercise record (owner/trainer/member)
+
+# delete an exercise (owner/trainer/member)
+
+# get exercises for a specific member (owner/trainer/member)
+
+# aggregate total payments / revenue (owner/staff/member)
+
+# aggregate average RPE (owner/trainer/member)
+
+# aggregate max weigh lifted by a member (owner/traiiner/member)
+
+# aggregate average run distance (owner/trainer/member)
+
+# get error logs (owner/staff)
