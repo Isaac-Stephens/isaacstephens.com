@@ -219,30 +219,78 @@ def db_updateMember(member_id):
 
 # delete a member (owner)
 def db_deleteMember(member_id):
-    return
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT email FROM Members WHERE member_id = %s", (member_id,))
+    row = cursor.fetchone()
+    if not row:
+        cursor.close()
+        db.close()
+        return False
+    email = row["email"]
+
+    cursor.execute("DELETE FROM Checkins WHERE member_id = %s", (member_id,))
+    cursor.execute("DELETE FROM PhoneNumbers WHERE member_id = %s", (member_id,))
+    cursor.execute("DELETE FROM EmergencyContacts WHERE member_id = %s", (member_id,))
+    cursor.execute("DELETE FROM Payments WHERE member_id = %s", (member_id,))
+    cursor.execute("DELETE FROM TrainerClients WHERE member_id = %s OR trainer_id = %s", (member_id, member_id))
+
+    cursor.execute("DELETE FROM users WHERE email = %s", (email,))
+    cursor.execute("DELETE FROM Members WHERE member_id = %s", (member_id,))
+
+    db.commit()
+    cursor.close()
+    db.close()
+    return True
 
 # add a payment for a member (owner/staff/member)
 def db_addPayment(member_id):
     return
 
 # register staff / trainer (owner)
+def db_registerStaff():
+    return
+
+def db_registerTrainer():
+    return
 
 # assign trainer to a member (owner/staff/trainer)
+def db_assignTrainer():
+    return
 
 # log an exercise for a member (owner/trainer/member)
+def db_logExercise():
+    return
 
 # modify an exercise record (owner/trainer/member)
+def db_modifyExercise():
+    return
 
 # delete an exercise (owner/trainer/member)
+def db_deleteExercise():
+    return
 
 # get exercises for a specific member (owner/trainer/member)
+def db_getExercise():
+    return
 
 # aggregate total payments / revenue (owner/staff/member)
+def db_aggregatePayments():
+    return
 
 # aggregate average RPE (owner/trainer/member)
+def db_aggregateRPE():
+    return
 
-# aggregate max weigh lifted by a member (owner/traiiner/member)
+# aggregate max weight lifted by a member (owner/traiiner/member)
+def db_aggregateMaxWeight():
+    return
 
 # aggregate average run distance (owner/trainer/member)
+def db_aggregateAvgRunDist():
+    return
 
 # get error logs (owner/staff)
+def db_getErrorLog():
+    return

@@ -67,6 +67,7 @@
               <th>Start Date</th>
               <th>Emergency Contact Name</th>
               <th>Emergency Contact Phone Number</th>
+              <th>Actions</th>
             </thead>
             <tbody>
               {% if member_lookup %}
@@ -80,6 +81,18 @@
                     <td>{{ record.membership_start_date }}</td>
                     <td>{{ record.emergency_contact_name }}</td>
                     <td>{{ record.emergency_contact_phone }}</td>
+                    <td>
+                      <!-- Modify Button -->
+                      <button type="submit" name="modify_member" value="{{ record.member_id }}">
+                        Modify
+                      </button>
+
+                      <!-- Delete Button -->
+                      <button type="submit" name="delete_member" value="{{ record.member_id }}"
+                              onclick="return confirm('Are you sure you want to delete this member?');">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 {% endfor %}
               {% else %}
@@ -101,6 +114,7 @@
           <th>E-Mail</th>
           <th>Birthday</th>
           <th>Start Date</th>
+          <th>Actions</th>
         </thread>
         <tbody>
           {% for member in member_list %}
