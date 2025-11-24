@@ -12,12 +12,14 @@
 # A live web demo can be found @ https://isaacstephens.com/gymman-login.  #
 # ======================================================================= #
 
+from werkzeug.security import generate_password_hash
 import mysql.connector
 import os
 from dotenv import load_dotenv
 
 env_path = os.path.join(os.path.dirname(__file__), "db.env")
 load_dotenv(env_path)
+
 # database conn
 def get_db():
     return mysql.connector.connect(
@@ -192,12 +194,36 @@ def db_showTrainerClients(trainerID):
     return trainerClients
 
 # add a new member and create their user (owner/staff)
+def db_createMemberUser(fname, lname, bd, email, sex, username, pw):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        INSERT INTO Members(first_name, last_name, birth_date, membership_start_date, email, sex)
+        VALUES (%s, %s, %s, CURDATE(), %s, %s)
+    """, (fname, lname, bd, email, sex))
+    member_id = cursor.lastrowid
+    pw_hash = generate_password_hash(pw)
+    cursor.execute("""
+        INSERT INTO users (username, password_hash, role_id, first_name, last_name, email)
+        VALUES (%s, %s, 3, %s, %s, %s)
+    """,(username, pw_hash, fname, lname, email))
+    user_id = cursor.lastrowid
+    db.commit()
+    cursor.close()
+    db.close()
+    return member_id, user_id
 
-# update a member's information (owner/staff)
+# update a member's information (owner/staff/member(self))
+def db_updateMember(member_id):
+    return
 
 # delete a member (owner)
+def db_deleteMember(member_id):
+    return
 
-# add a payment for a member (owner/staff/member) 
+# add a payment for a member (owner/staff/member)
+def db_addPayment(member_id):
+    return
 
 # register staff / trainer (owner)
 
@@ -205,7 +231,7 @@ def db_showTrainerClients(trainerID):
 
 # log an exercise for a member (owner/trainer/member)
 
-# modify and exercise record (owner/trainer/member)
+# modify an exercise record (owner/trainer/member)
 
 # delete an exercise (owner/trainer/member)
 
