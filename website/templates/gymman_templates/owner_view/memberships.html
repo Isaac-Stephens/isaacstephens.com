@@ -24,6 +24,31 @@
 <div class="card-grid">
   <div class="card">
     <div class="form-section">
+      <h2>Create a New Member</h2>
+      <form method="post" action="">
+        <label>Name</label>
+        <div class="form-group">
+          <input type="text" name="new_fname" placeholder="Enter First Name..." required>
+          <input type="text" name="new_lname" placeholder="Enter Last Name..." required>
+        </div>
+        <label>Member Info</label>
+        <div class="form-group">
+          <p style="text-align: left; font-size: small">Birthday</p>
+          <input type="date" name="new_birthdate" placeholder="Enter Birthday..." required>
+          <input type="text" name="new_email" placeholder="Enter Email..." required>
+          <input type="text" name="new_sex" placeholder="Enter Member Sex..." required>
+        </div>
+        <label>Member User Account</label>
+        <div class="form-group">
+          <input type="text" name="new_username" placeholder="Enter New Username..." required>
+          <input type="password" name="new_password" placeholder="Enter Password..." required>
+          <input type="password" name="repeat_new_password" placeholder="Repeat Password..." required>
+        </div>
+
+        <button type="submit" name="new_member" value="1">Create</button>
+      </form>
+    </div>
+    <div class="form-section">
       <h2>Member Lookup</h2>
       <form method="post" action="">
           <div class="form-group">

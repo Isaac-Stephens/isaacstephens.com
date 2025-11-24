@@ -1,23 +1,20 @@
 # ======================================================================= #
-#                            GYMMAN: AUTH PATHS                           #
-#                          Author: Isaac Stephens                         #
+#                           GYMMAN: AUTH PATHS                            #
+#                         Author: Isaac Stephens                          #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
-#          Junior, Computer Science, CS Department, Missouri S&T          #
-#              issq3r@mst.edu || isaac.stephens1529@gmail.com             #
+#         Junior, Computer Science, CS Department, Missouri S&T           #
+#             issq3r@mst.edu || isaac.stephens1529@gmail.com              #
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ #
 # This file (auth.py) contains the majority of the backend functionality  #
 # for the GymMan Demo site. All routes and verifications happen here.     #
 #                                                                         #
-# A live web demo can be found @ https://isaacstephens.com/gymman-login.  #
+#  A live web demo can be found @ https://isaacstephens.com/gymman-login. #
 # ======================================================================= #
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
-from .models import (get_db, db_findMember, db_logCheckin, db_getNumTotalMembers, 
-                     db_getNumPendingPayments, db_getNumActiveTrainers, db_showRecentCheckIns,
-                     db_memberLookUp, db_showAllMembers, db_showTrainerClientRel, 
-                     db_showTrainerClients)
+from .models import *
 
 auth = Blueprint('auth', __name__)
 auth.permanent_session_lifetime = timedelta(minutes=30)
@@ -165,12 +162,14 @@ def owner_dashboard():
     pending_payments = db_getNumPendingPayments()
     total_active_trainers = db_getNumActiveTrainers()
 
-    return render_template("/gymman_templates/dashboard_owner.html", 
-                           username=session["username"], 
-                           name=session["name"],
-                           total_members=total_members,
-                           pending_payments=pending_payments,
-                           total_active_trainers=total_active_trainers)
+    return render_template(
+        "/gymman_templates/dashboard_owner.html", 
+        username=session["username"], 
+        name=session["name"],
+        total_members=total_members,
+        pending_payments=pending_payments,
+        total_active_trainers=total_active_trainers
+    )
 
 @auth.route("/owner/memberships", methods=['GET','POST'])
 def owner_memberships():
@@ -192,6 +191,39 @@ def owner_memberships():
         elif 'checkin' in request.form:
             # If this POST was for a check-in action
             return checkin()
+        elif 'new_member' in request.form:
+            fname = request.form.get("new_fname")
+            lname = request.form.get("new_lname")
+            bd = request.form.get("new_birthdate")
+            email = request.form.get("new_email")
+            sex = request.form.get("new_sex")
+            username = request.form.get("new_username")
+            pw = request.form.get("new_password")
+            pw_repeat = request.form.get("repeat_new_password")
+
+            # validation
+            if pw != pw_repeat:
+                flash('Passwords do not match.')
+                return redirect(request.referrer)      
+            db = get_db()
+            cursor = db.cursor(dictionary=True)
+            # check if username OR email already exists
+            cursor.execute("SELECT * FROM users WHERE username = %s OR email = %s", (username, email))
+            existing_user = cursor.fetchone()
+            if existing_user:
+                flash('Username or email already exists.')
+                cursor.close()
+                db.close()
+                return redirect(request.referrer)
+            cursor.close()
+            db.close()
+            if not all([fname, lname, email, username, pw, pw_repeat]):
+                flash("Missing required fields.")
+                return redirect(request.referrer)
+
+            db_createMemberUser(fname, lname, bd, email, sex, username, pw)
+            flash("New member created!")
+            return redirect(request.referrer)
         else:
             return redirect(request.referrer)
 
@@ -201,13 +233,15 @@ def owner_memberships():
     # Fetch recent check-ins
     recent_checkins = db_showRecentCheckIns(num_shown)
     
-    return render_template("/gymman_templates/owner_view/memberships.html", 
-                           username=session["username"], 
-                           name=session["name"],
-                           recent_checkins=recent_checkins,
-                           num_shown=num_shown,
-                           member_lookup=member_lookup,
-                           member_list=member_list)
+    return render_template(
+        "/gymman_templates/owner_view/memberships.html", 
+        username=session["username"], 
+        name=session["name"],
+        recent_checkins=recent_checkins,
+        num_shown=num_shown,
+        member_lookup=member_lookup,
+        member_list=member_list
+    )
 
 @auth.route("/owner/payments")
 def owner_payments():
