@@ -150,6 +150,11 @@ def checkin():
     flash(f"{member['first_name']} {member['last_name']} checked in successfully!", "success")
     return redirect(request.referrer)
 
+@auth.route("/owner/members/<int:member_id>/modify")
+def modify_member_form(member_id):
+    info = db_findMember(member_id)
+    return render_template("modify_member.html", info=info)
+
 # +++++++++++++++++++++++++++++++++++
 # =========== Owner Views ===========
 # +++++++++++++++++++++++++++++++++++
@@ -223,6 +228,15 @@ def owner_memberships():
 
             db_createMemberUser(fname, lname, bd, email, sex, username, pw)
             flash("New member created!")
+            return redirect(request.referrer)
+        elif 'modify_member' in request.form:
+            member_id = request.form['modify_member']
+            return redirect(url_for('auth.modify_member_form', member_id=member_id))
+
+        elif 'delete_member' in request.form:
+            member_id = request.form['delete_member']
+            db_deleteMember(member_id)
+            flash("Member deleted successfully.")
             return redirect(request.referrer)
         else:
             return redirect(request.referrer)
