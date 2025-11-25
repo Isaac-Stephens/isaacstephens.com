@@ -153,8 +153,8 @@ def checkin():
 @auth.route("/members/<int:member_id>/modify")
 def modify_member_form(member_id):
     info = db_findMember(member_id)
-    
-    return render_template("modify_member.html", info=info)
+
+    return render_template("/gymman_templates/modify_member.html", info=info)
 
 # +++++++++++++++++++++++++++++++++++
 # =========== Owner Views ===========
