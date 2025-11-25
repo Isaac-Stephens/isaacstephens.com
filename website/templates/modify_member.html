@@ -4,5 +4,32 @@
 
 {% endblock %}
 {% block content %}
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
+<div class="card-grid">
+    <!-- Update Email / Phone Number(s) -->
+    <div class="card">
+        
+    </div>
+    <!-- Phone Number Table -->
+    <div class="card">
+
+    </div>
+    <!-- Emergency Contact Table -->
+    <div class="card">
+
+    </div>
+    <!-- Update Emergency Contact -->
+    <div class="card">
+
+    </div>
+</div>
 {% endblock %}
