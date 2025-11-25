@@ -150,9 +150,10 @@ def checkin():
     flash(f"{member['first_name']} {member['last_name']} checked in successfully!", "success")
     return redirect(request.referrer)
 
-@auth.route("/owner/members/<int:member_id>/modify")
+@auth.route("/members/<int:member_id>/modify")
 def modify_member_form(member_id):
     info = db_findMember(member_id)
+    
     return render_template("modify_member.html", info=info)
 
 # +++++++++++++++++++++++++++++++++++

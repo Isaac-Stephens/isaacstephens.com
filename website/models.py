@@ -214,8 +214,78 @@ def db_createMemberUser(fname, lname, bd, email, sex, username, pw):
     return member_id, user_id
 
 # update a member's information (owner/staff/member(self))
-def db_updateMember(member_id):
-    return
+def db_updateMemberEmail(member_id, new_email):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE Members
+        SET email = %s
+        WHERE member_id = %s
+    """, (new_email, member_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_addMemberPhone(member_id, phone_number, phone_type):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO PhoneNumbers (member_id, phone_number, phone_number_type)
+        VALUES (%s, %s, %s)
+    """, (member_id, phone_number, phone_type))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_updateMemberPhone(member_id, phone_number_id, new_phone_number, new_type):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE PhoneNumbers
+        SET phone_number = %s,
+            phone_number_type = %s
+        WHERE phone_number_id = %s AND member_id = %s
+    """, (new_phone_number, new_type, phone_number_id, member_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_addMemberEmergencyContact(member_id, fname, lname, relationship, phone, email):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO EmergencyContacts (member_id, first_name, last_name, relationship, phone_number, email)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (member_id, fname, lname, relationship, phone, email))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_updateMemberEmergencyContact(member_id, ec_id, fname, lname, relationship, phone, email):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE EmergencyContacts
+        SET first_name = %s,
+            last_name = %s,
+            relationship = %s,
+            phone_number = %s,
+            email = %s
+        WHERE emergency_contact_id = %s AND member_id = %s
+    """, (fname, lname, relationship, phone, email, ec_id, member_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # delete a member (owner)
 def db_deleteMember(member_id):
