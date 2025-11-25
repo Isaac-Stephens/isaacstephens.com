@@ -22,29 +22,60 @@
     <div class="card">
       <h3>Update Contact Info</h3>
       <div class="form-section">
+        <form method="post" action="">
         <label><strong>Add New Phone Number</strong></label>
         <div class="form-group">
           <input type="text" name="new_phone_num" placeholder="000-000-0000" required>
           <input type="text" name="new_phone_num_type" placeholder="'Mobile', 'Work', 'Home'..." required>
-          <button type="submit" name="new_phone" value="1">Add</button>
         </div>
+        <button type="submit" name="new_phone" value="1">Add</button>
+        </form>
       </div>
       <div class="form-section">
-        <label><strong>Update Existing Phone Number</strong></label>
-
+        <label><strong>Update Email</strong></label>
+        <label>(Current: {{ info['email'] }})</label>
+        <form method="post" action="">
+          <div class="form-group">
+            <input type="text" name="new_email" placeholder="Enter New Email: example@email.com" required>
+          </div>
+          <button type="submit" name="new_email" value="1">Update</button>
+        </form>
       </div>
     </div>
     <div class="card">
-      <h3>Update Emergency Contacts</h3>
+      <h3>Add Emergency Contact</h3>
+      <div class="form-section">
+        <form method="post" action="">
+          <label style="text-align: left;">Name:</label>
+          <div class="form-group">
+            <input type="text" name="new_contact_fname" placeholder="First Name..." required>
+            <input type="text" name="new_contact_lname" placeholder="Last Name" required>
+          </div>
+          <label style="text-align: left;">Relationship:</label>
+          <div class="form-group">
+            <input type="text" name="new_contact_relationship" placeholder="ie. 'Mother', 'Father', etc..." required>
+          </div>
+          <label style="text-align: left;">Contact Info:</label>
+          <div class="form-group">
+            <label style="size: small; text-align: left;">Phone</label>
+            <input type="text" name="new_contact_phone" placeholder="000-000-0000" required>
+            <label style="size: small; text-align: left;">Email</label>
+            <input type="text" name="new_contact_email" placeholder="example@email.com">
+          </div>
+          <button type="submit" name="new_contact" value="1">Add</button>
+        </form>
+      </div>
     </div>
 
     <div class="card">
       <h3>Phone Numbers</h3>
+      <form method="post" action="">
       <table>
         <thead>
-          <th>ID</th>
+          <th>Phone Number ID</th>
           <th>Phone Number</th>
           <th>Type</th>
+          <th></th>
           </thead>
         <tbody>
           {% if phone_numbers %}
@@ -53,6 +84,13 @@
                 <td>{{ record.phone_number_id }}</td>
                 <td>{{ record.phone_number }}</td>
                 <td>{{ record.phone_number_type }}</td>
+                <td>
+                  
+                  <button style="background: red;" type="submit" name="delete_phone" value="{{ record.phone_number_id }}"
+                          onclick="return confirm('Are you sure you want to delete this number?');">
+                    Delete
+                  </button>
+                </td>
               </tr>
             {% endfor %}
           {% else %}
@@ -62,8 +100,9 @@
           {% endif %}
         </tbody>
       </table>
+      </form>
     </div>
-    
+
     <div class="card">
       <h3>Emergency Contacts</h3>
       <table>
@@ -73,6 +112,7 @@
           <th>Email</th>
           <th>Phone</th>
           <th>Relationship</th>
+          <th></th>
         </thead>
         <tbody>
           {% if emergency_contacts %}
@@ -83,6 +123,12 @@
                 <td>{{ record.email }}</td>
                 <td>{{ record.phone_number }}</td>
                 <td>{{ record.relationship }}</td>
+                <td>
+                  <button style="background: red;" type="submit" name="delete_contact" value="{{ record.emergency_contact_id }}"
+                          onclick="return confirm('Are you sure you want to delete this contact?');">
+                    Delete
+                  </button>
+                </td>
               </tr>
             {% endfor %}
           {% else %}
