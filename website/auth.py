@@ -152,9 +152,25 @@ def checkin():
 
 @auth.route("/members/<int:member_id>/modify")
 def modify_member_form(member_id):
-    info = db_findMember(member_id)
+    # Allow Owners, Staff, or Members (but members can only access themselves)
+    if not (is_logged_in("Owner") or is_logged_in("Staff") or is_logged_in("Member")):
+        return redirect(url_for("auth.login"))
 
-    return render_template("/gymman_templates/modify_member.html", info=info)
+    # Member role cannot modify others
+    if is_logged_in("Member") and session.get("member_id") != member_id:
+        flash("You do not have permission to modify this member.")
+        return redirect(url_for("auth.login"))
+
+    info = db_findMember(member_id)
+    phone_numbers = db_getMemberPhone(member_id)
+    emergency_contacts = db_getMemberEmergencyContacts(member_id)
+
+    return render_template(
+        "/gymman_templates/modify_member.html", 
+        info=info, 
+        member_id=member_id,
+        phone_numbers=phone_numbers,
+        emergency_contacts=emergency_contacts)
 
 # +++++++++++++++++++++++++++++++++++
 # =========== Owner Views ===========

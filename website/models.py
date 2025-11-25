@@ -188,10 +188,42 @@ def db_showTrainerClients(trainerID):
         WHERE 
             tc.trainer_id = %s
     """, (trainerID))
-    trainerClients = cursor.fetchall
+    trainerClients = cursor.fetchall()
     cursor.close()
     db.close()
     return trainerClients
+
+def db_getMemberPhone(memberID):
+    if memberID is None:
+        return []
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT phone_number_id, phone_number, phone_number_type
+        FROM PhoneNumbers
+        WHERE member_id = %s
+    """,(memberID,))
+    phoneNumbers = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+    return phoneNumbers
+
+def db_getMemberEmergencyContacts(memberID):
+    if memberID is None:
+        return []
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT emergency_contact_id, CONCAT(first_name, ' ', last_name) AS name, email, phone_number, relationship
+        FROM EmergencyContacts
+        WHERE member_id = %s
+    """, (memberID,))
+    emergency_contacts = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return emergency_contacts
+
 
 # add a new member and create their user (owner/staff)
 def db_createMemberUser(fname, lname, bd, email, sex, username, pw):

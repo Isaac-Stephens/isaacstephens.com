@@ -4,6 +4,9 @@
 
 {% endblock %}
 {% block content %}
+<header>
+  <h1>Member {{ member_id }}: {{ info['first_name'] + ' ' + info['last_name'] }}</h1>
+</header>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <div class="flash">
@@ -17,19 +20,78 @@
 <div class="card-grid">
     <!-- Update Email / Phone Number(s) -->
     <div class="card">
-        
-    </div>
-    <!-- Phone Number Table -->
-    <div class="card">
+      <h3>Update Contact Info</h3>
+      <div class="form-section">
+        <label><strong>Add New Phone Number</strong></label>
+        <div class="form-group">
+          <input type="text" name="new_phone_num" placeholder="000-000-0000" required>
+          <input type="text" name="new_phone_num_type" placeholder="'Mobile', 'Work', 'Home'..." required>
+          <button type="submit" name="new_phone" value="1">Add</button>
+        </div>
+      </div>
+      <div class="form-section">
+        <label><strong>Update Existing Phone Number</strong></label>
 
+      </div>
     </div>
-    <!-- Emergency Contact Table -->
     <div class="card">
-
+      <h3>Update Emergency Contacts</h3>
     </div>
-    <!-- Update Emergency Contact -->
-    <div class="card">
 
+    <div class="card">
+      <h3>Phone Numbers</h3>
+      <table>
+        <thead>
+          <th>ID</th>
+          <th>Phone Number</th>
+          <th>Type</th>
+          </thead>
+        <tbody>
+          {% if phone_numbers %}
+            {% for record in phone_numbers %}
+              <tr>
+                <td>{{ record.phone_number_id }}</td>
+                <td>{{ record.phone_number }}</td>
+                <td>{{ record.phone_number_type }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center;">No numbers found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="card">
+      <h3>Emergency Contacts</h3>
+      <table>
+        <thead>
+          <th>Contact ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Relationship</th>
+        </thead>
+        <tbody>
+          {% if emergency_contacts %}
+            {% for record in emergency_contacts %}
+              <tr>
+                <td>{{ record.emergency_contact_id }}</td>
+                <td>{{ record.name }}</td>
+                <td>{{ record.email }}</td>
+                <td>{{ record.phone_number }}</td>
+                <td>{{ record.relationship }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center;">No contacts found.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
 </div>
 {% endblock %}
