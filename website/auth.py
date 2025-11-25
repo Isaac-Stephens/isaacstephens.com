@@ -150,10 +150,11 @@ def checkin():
     flash(f"{member['first_name']} {member['last_name']} checked in successfully!", "success")
     return redirect(request.referrer)
 
-@auth.route("/members/<int:member_id>/modify")
+@auth.route("/members/<int:member_id>/modify", methods=['GET', 'POST'])
 def modify_member_form(member_id):
     # Allow Owners, Staff, or Members (but members can only access themselves)
     if not (is_logged_in("Owner") or is_logged_in("Staff") or is_logged_in("Member")):
+        flash("You do not have permission to modify this member.")
         return redirect(url_for("auth.login"))
 
     # Member role cannot modify others
@@ -164,6 +165,38 @@ def modify_member_form(member_id):
     info = db_findMember(member_id)
     phone_numbers = db_getMemberPhone(member_id)
     emergency_contacts = db_getMemberEmergencyContacts(member_id)
+
+    if request.method == 'POST':
+        if 'new_phone' in request.form:
+            new_phone_num = request.form.get("new_phone_num")
+            new_phone_num_type = request.form.get("new_phone_num_type")
+            db_addMemberPhone(member_id, new_phone_num, new_phone_num_type)
+            flash("Phone Number Added Successfully!")
+            return redirect(request.referrer)
+        elif 'delete_phone' in request.form:
+            phone_id = request.form.get("delete_phone")
+            db_deletePhoneNum(phone_id)
+            flash("Phone Number Deleted Successfully.")
+            return redirect(request.referrer)
+        elif 'delete_contact' in request.form:
+            contact_id = request.form.get("delete_contact")
+            db_deleteEmergencyContact(contact_id)
+            flash("Emergency Contact Deleted Successfully.")
+            return redirect(request.referrer)
+        elif 'new_contact' in request.form:
+            fname = request.form.get("new_contact_fname")
+            lname = request.form.get("new_contact_lname")
+            rel = request.form.get("new_contact_relationship")
+            phone = request.form.get("new_contact_phone")
+            email = request.form.get("new_contact_email")
+            db_addMemberEmergencyContact(member_id, fname, lname, rel, phone, email)
+            flash("New Emergency Contact Added Successfully!")
+            return redirect(request.referrer)
+        elif 'new_email' in request.form:
+            email = request.form.get("new_email")
+            db_updateMemberEmail(member_id, email)
+            flash("Email Updated Successfully!")
+            return redirect(request.referrer)
 
     return render_template(
         "/gymman_templates/modify_member.html", 

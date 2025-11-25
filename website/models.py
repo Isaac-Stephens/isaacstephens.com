@@ -248,14 +248,21 @@ def db_createMemberUser(fname, lname, bd, email, sex, username, pw):
 # update a member's information (owner/staff/member(self))
 def db_updateMemberEmail(member_id, new_email):
     db = get_db()
-    cursor = db.cursor()
-
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT email FROM Members WHERE member_id = %s", (member_id,))
+    row = cursor.fetchone()
+    old_email = row['email']
+    cursor.execute("""
+        UPDATE users
+        SET email = %s
+        WHERE email = %s
+    """,(new_email, old_email))
+    db.commit()
     cursor.execute("""
         UPDATE Members
         SET email = %s
         WHERE member_id = %s
     """, (new_email, member_id))
-
     db.commit()
     cursor.close()
     db.close()
@@ -288,6 +295,14 @@ def db_updateMemberPhone(member_id, phone_number_id, new_phone_number, new_type)
     cursor.close()
     db.close()
 
+def db_deletePhoneNum(phoneID):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM PhoneNumbers WHERE phone_number_id = %s", (phoneID,))
+    db.commit()
+    cursor.close()
+    db.close()
+
 def db_addMemberEmergencyContact(member_id, fname, lname, relationship, phone, email):
     db = get_db()
     cursor = db.cursor()
@@ -315,6 +330,14 @@ def db_updateMemberEmergencyContact(member_id, ec_id, fname, lname, relationship
         WHERE emergency_contact_id = %s AND member_id = %s
     """, (fname, lname, relationship, phone, email, ec_id, member_id))
 
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_deleteEmergencyContact(ecID):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM EmergencyContacts WHERE emergency_contact_id = %s", (ecID,))
     db.commit()
     cursor.close()
     db.close()
