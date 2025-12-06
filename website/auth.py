@@ -311,7 +311,12 @@ def owner_memberships():
 def owner_payments():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/owner_view/payments.html", username=session["username"], name=session["name"])
+    
+    return render_template(
+        "/gymman_templates/owner_view/payments.html", 
+        username=session["username"], 
+        name=session["name"]
+    )
 
 @auth.route("/owner/staff")
 def owner_staff():
