@@ -370,52 +370,275 @@ def db_deleteMember(member_id):
     return True
 
 # add a payment for a member (owner/staff/member)
-def db_addPayment(member_id):
-    return
+def db_addPayment(member_id, amount, status="pending", payment_type="membership"):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO Payments (member_id, amount, payment_date, status, type)
+        VALUES (%s, %s, CURDATE(), %s, %s)
+    """, (member_id, amount, status, payment_type))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # register staff / trainer (owner)
-def db_registerStaff():
-    return
+def db_registerStaff(ssn, fname, lname, emp_date, birth_date, address,
+                     staff_type, hourly_rate=None, annual_salary=None,
+                     contract_type=None, contract_details=None,
+                     shift_managed=None):
+    db = get_db()
+    cursor = db.cursor()
 
-def db_registerTrainer():
-    return
+    cursor.execute("""
+        INSERT INTO Staff (ssn, first_name, last_name, employment_date, birth_date, staff_address)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (ssn, fname, lname, emp_date, birth_date, address))
+
+    staff_id = cursor.lastrowid
+
+    if staff_type == "hourly":
+        cursor.execute("INSERT INTO Hourly_Employees VALUES (%s, %s)",
+                       (staff_id, hourly_rate))
+    elif staff_type == "salary":
+        cursor.execute("INSERT INTO Salary_Employees VALUES (%s, %s)",
+                       (staff_id, annual_salary))
+    elif staff_type == "maintenance":
+        cursor.execute("INSERT INTO Maintainence VALUES (%s)", (staff_id,))
+    elif staff_type == "manager":
+        cursor.execute("INSERT INTO Managers VALUES (%s, %s)",
+                       (staff_id, shift_managed))
+    elif staff_type == "contractor":
+        cursor.execute("INSERT INTO Contractors VALUES (%s, %s, %s)",
+                       (staff_id, contract_type, contract_details))
+
+    db.commit()
+    cursor.close()
+    db.close()
+    return staff_id
+
+def db_registerTrainer(staff_id, speciality, active=1):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO Trainers (staff_id, speciality, active)
+        VALUES (%s, %s, %s)
+    """, (staff_id, speciality, active))
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+def db_getAllTrainers():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT t.staff_id, t.speciality, t.active,
+               CONCAT(s.first_name, ' ', s.last_name) AS trainer_name
+        FROM Trainers t
+        JOIN Staff s ON t.staff_id = s.staff_id
+        ORDER BY trainer_name
+    """)
+    all_trainers = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+    return all_trainers
 
 # assign trainer to a member (owner/staff/trainer)
-def db_assignTrainer():
-    return
+def db_assignTrainer(trainer_id, member_id, notes=None):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO TrainerClients (trainer_id, member_id, client_start_date, notes)
+        VALUES (%s, %s, CURDATE(), %s)
+        ON DUPLICATE KEY UPDATE
+            client_end_date = NULL,
+            notes = VALUES(notes)
+    """, (trainer_id, member_id, notes))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # log an exercise for a member (owner/trainer/member)
-def db_logExercise():
-    return
+def db_logExercise(member_id, name, rpe, date,
+                   strength_data=None, cardio_data=None):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        INSERT INTO Exercises (member_id, exercise_name, rpe, exercise_date)
+        VALUES (%s, %s, %s, %s)
+    """, (member_id, name, rpe, date))
+
+    exercise_id = cursor.lastrowid
+
+    if strength_data:
+        cursor.execute("""
+            INSERT INTO Strength_Exercises
+            (exercise_id, strength_id, exercise_weight, weight_unit,
+             num_sets, num_repetitions, notes)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (exercise_id, *strength_data))
+
+    if cardio_data:
+        cursor.execute("""
+            INSERT INTO Cardio_Exercises
+            (exercise_id, avg_hr, time_taken)
+            VALUES (%s, %s, %s)
+        """, (exercise_id, *cardio_data))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # modify an exercise record (owner/trainer/member)
-def db_modifyExercise():
-    return
+def db_modifyExercise(exercise_id, rpe=None, date=None):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE Exercises
+        SET rpe = COALESCE(%s, rpe),
+            exercise_date = COALESCE(%s, exercise_date)
+        WHERE exercise_id = %s
+    """, (rpe, date, exercise_id))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # delete an exercise (owner/trainer/member)
-def db_deleteExercise():
-    return
+def db_deleteExercise(exercise_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("DELETE FROM Exercises WHERE exercise_id = %s", (exercise_id,))
+
+    db.commit()
+    cursor.close()
+    db.close()
 
 # get exercises for a specific member (owner/trainer/member)
-def db_getExercise():
-    return
+def db_getExercise(member_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM Exercises
+        WHERE member_id = %s
+        ORDER BY exercise_date DESC
+    """, (member_id,))
+
+    exercises = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return exercises
 
 # aggregate total payments / revenue (owner/staff/member)
-def db_aggregatePayments():
-    return
+def db_aggregatePayments(member=False, member_id=None):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    if member == False:
+        cursor.execute("""
+            SELECT SUM(amount) AS total_revenue
+            FROM Payments
+            WHERE LOWER(status) = 'Complete' OR LOWER(status) = 'Paid'
+        """)
+    else:
+        cursor.execute("""
+            SELECT SUM(amount) AS total_revenue
+            FROM Payments
+            WHERE LOWER(status) = 'completed'
+            AND member_id = %s
+        """, (member_id))
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+    return row["total_revenue"] or 0
 
 # aggregate average RPE (owner/trainer/member)
-def db_aggregateRPE():
-    return
+def db_aggregateRPE(member_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT AVG(rpe) AS avg_rpe
+        FROM Exercises
+        WHERE member_id = %s
+    """, (member_id,))
+
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+    return row["avg_rpe"] or 0
 
 # aggregate max weight lifted by a member (owner/traiiner/member)
-def db_aggregateMaxWeight():
-    return
+def db_aggregateMaxWeight(member_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT MAX(exercise_weight) AS max_weight
+        FROM Strength_Exercises se
+        JOIN Exercises e ON se.exercise_id = e.exercise_id
+        WHERE e.member_id = %s
+    """, (member_id,))
+
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+    return row["max_weight"] or 0
+
+# load pending payments
+def db_loadPendingPayments():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT 
+            p.payment_id,
+            p.member_id,
+            CONCAT(m.first_name, ' ', m.last_name) AS member_name,
+            p.amount,
+            p.payment_date,
+            p.status,
+            p.type
+        FROM Payments AS p
+        JOIN Members AS m ON p.member_id = m.member_id
+        WHERE LOWER(p.status) = 'pending'
+        ORDER BY p.payment_date DESC
+    """)
+    pending_payments = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return pending_payments
 
 # aggregate average run distance (owner/trainer/member)
-def db_aggregateAvgRunDist():
-    return
+def db_aggregateAvgRunDist(member_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT AVG(r.distance) AS avg_distance
+        FROM Runs r
+        JOIN Cardio_Exercises c ON r.cardio_id = c.cardio_id
+        JOIN Exercises e ON c.exercise_id = e.exercise_id
+        WHERE e.member_id = %s
+    """, (member_id,))
+
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+    return row["avg_distance"] or 0
 
 # get error logs (owner/staff)
+# TODO: set up error logging 
 def db_getErrorLog():
     return

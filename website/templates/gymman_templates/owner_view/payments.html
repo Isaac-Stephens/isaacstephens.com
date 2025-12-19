@@ -11,4 +11,163 @@
 {% endblock %}
 {% block content %} 
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="card-grid">
+
+  <!-- Left card: Search Payments -->
+  <div class="card">
+    <div class="form-section">
+      <h2>Search Payments</h2>
+      <form method="post" action="">
+        <div class="form-group">
+          <label for="search_member">Member ID or Name</label>
+          <input 
+            type="text" 
+            id="search_member" 
+            name="search_member" 
+            placeholder="Search by member ID or name..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="date_from">From Date</label>
+          <input type="date" id="date_from" name="date_from">
+        </div>
+
+        <div class="form-group">
+          <label for="date_to">To Date</label>
+          <input type="date" id="date_to" name="date_to">
+        </div>
+
+        <div class="form-group">
+          <label for="status_filter">Status</label>
+          <select id="status_filter" name="status_filter">
+            <option value="">Any</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <button type="submit" name="search_payment" value="1">Search</button>
+      </form>
+    </div>
+
+    {% if search_results is not none %}
+      <div class="data-table">
+        <h2>Search Results</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Payment ID</th>
+              <th>Member</th>
+              <th>Member ID</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if search_results %}
+              {% for p in search_results %}
+                <tr>
+                  <td>{{ p.payment_id }}</td>
+                  <td>{{ p.member_name }}</td>
+                  <td>{{ p.member_id }}</td>
+                  <td>${{ "%.2f"|format(p.amount) }}</td>
+                  <td>{{ p.payment_date }}</td>
+                  <td>{{ p.status }}</td>
+                  <td>{{ p.type }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" style="text-align: center;">No payments found.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right card: Pending + Aggregate -->
+  <div class="card">
+
+    <div class="data-table">
+      <h2>Pending Payments</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Payment ID</th>
+            <th>Member</th>
+            <th>Member ID</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if pending_payments %}
+            {% for p in pending_payments %}
+              <tr>
+                <td>{{ p.payment_id }}</td>
+                <td>{{ p.member_name }}</td>
+                <td>{{ p.member_id }}</td>
+                <td>${{ "%.2f"|format(p.amount) }}</td>
+                <td>{{ p.payment_date }}</td>
+                <td>{{ p.status }}</td>
+                <td>{{ p.type }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" style="text-align: center;">No pending payments.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-section" style="margin-top: 1.5rem;">
+      <h2>Aggregate Revenue Over N Days</h2>
+      <form method="post" action="">
+        <div class="form-group">
+          <label for="n_days">Number of Days</label>
+          <input 
+            type="number" 
+            id="n_days" 
+            name="n_days" 
+            min="1" 
+            placeholder="Enter N (eg. 30)" 
+            required
+          >
+        </div>
+        <button type="submit" name="aggregate_over_n" value="1">
+          Calculate Total
+        </button>
+      </form>
+
+      {% if aggregate_total is not none %}
+        <p style="margin-top: 1rem;">
+          Total completed payments in the last N days: 
+          <strong>${{ "%.2f"|format(aggregate_total) }}</strong>
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}

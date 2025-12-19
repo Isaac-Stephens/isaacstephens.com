@@ -11,4 +11,178 @@
 {% endblock %}
 {% block content %} 
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="card-grid">
+
+  <!-- Left card: select member + log new exercise -->
+  <div class="card">
+    <div class="form-section">
+      <h2>Select Member</h2>
+      <form method="post" action="">
+        <div class="form-group">
+          <label for="member_id">Member</label>
+          <select id="member_id" name="member_id" required>
+            <option value="" disabled {% if not selected_member_id %}selected{% endif %}>
+              Select member...
+            </option>
+            {% for m in all_members %}
+              <option value="{{ m.member_id }}"
+                {% if selected_member_id and selected_member_id|int == m.member_id %}selected{% endif %}>
+                {{ m.member_name }} (ID: {{ m.member_id }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" name="search_member" value="1">Load Exercises</button>
+      </form>
+    </div>
+
+    <div class="form-section" style="margin-top: 1.5rem;">
+      <h2>Log New Exercise</h2>
+      <form method="post" action="">
+        <div class="form-group">
+          <label for="log_member_id">Member</label>
+          <select id="log_member_id" name="log_member_id" required>
+            <option value="" disabled {% if not selected_member_id %}selected{% endif %}>
+              Select member...
+            </option>
+            {% for m in all_members %}
+              <option value="{{ m.member_id }}"
+                {% if selected_member_id and selected_member_id|int == m.member_id %}selected{% endif %}>
+                {{ m.member_name }} (ID: {{ m.member_id }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="exercise_name">Exercise Name</label>
+          <input 
+            type="text" 
+            id="exercise_name" 
+            name="exercise_name" 
+            placeholder="e.g., Bench Press, 5K Run" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="rpe">RPE (1–10)</label>
+          <input 
+            type="number" 
+            id="rpe" 
+            name="rpe" 
+            min="1" max="10" 
+            placeholder="7" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="exercise_date">Date</label>
+          <input type="date" id="exercise_date" name="exercise_date" required>
+        </div>
+
+        <button type="submit" name="log_exercise" value="1">Log Exercise</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right card: exercise table (view / modify / delete) -->
+  <div class="card">
+    <div class="data-table">
+      <h2>
+        {% if selected_member_id %}
+          Exercises for Member ID {{ selected_member_id }}
+        {% else %}
+          Exercises
+        {% endif %}
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Exercise ID</th>
+            <th>Name</th>
+            <th>RPE</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if exercises %}
+            {% for e in exercises %}
+              <tr>
+                <td>{{ e.exercise_id }}</td>
+                <td>{{ e.exercise_name }}</td>
+                <td>{{ e.rpe }}</td>
+                <td>{{ e.exercise_date }}</td>
+                <td>
+                  <!-- Per-row form for modify/delete -->
+                  <form method="post" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <input type="hidden" name="exercise_id" value="{{ e.exercise_id }}">
+                    {% if selected_member_id %}
+                      <input type="hidden" name="member_id_for_refresh" value="{{ selected_member_id }}">
+                    {% endif %}
+
+                    <div class="form-group" style="display: flex; gap: 0.25rem;">
+                      <input 
+                        type="number" 
+                        name="new_rpe" 
+                        min="1" max="10" 
+                        placeholder="New RPE"
+                        style="max-width: 6rem;"
+                      >
+                      <input 
+                        type="date" 
+                        name="new_date" 
+                        style="max-width: 10rem;"
+                      >
+                    </div>
+
+                    <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                      <button type="submit" name="modify_exercise" value="1">
+                        Update
+                      </button>
+
+                      <button 
+                        type="submit" 
+                        name="delete_exercise" 
+                        value="{{ e.exercise_id }}" 
+                        style="background: red;"
+                        onclick="return confirm('Delete this exercise record?');"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" style="text-align: center;">
+                {% if selected_member_id %}
+                  No exercises found for this member.
+                {% else %}
+                  Select a member to view exercise logs.
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
 {% endblock %}

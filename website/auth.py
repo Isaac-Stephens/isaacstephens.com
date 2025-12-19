@@ -216,6 +216,7 @@ def owner_dashboard():
     total_members = db_getNumTotalMembers()
     pending_payments = db_getNumPendingPayments()
     total_active_trainers = db_getNumActiveTrainers()
+    total_revenue = db_aggregatePayments()
 
     return render_template(
         "/gymman_templates/dashboard_owner.html", 
@@ -223,7 +224,8 @@ def owner_dashboard():
         name=session["name"],
         total_members=total_members,
         pending_payments=pending_payments,
-        total_active_trainers=total_active_trainers
+        total_active_trainers=total_active_trainers,
+        total_revenue=total_revenue
     )
 
 @auth.route("/owner/memberships", methods=['GET','POST'])
@@ -288,6 +290,25 @@ def owner_memberships():
             db_deleteMember(member_id)
             flash("Member deleted successfully.")
             return redirect(request.referrer)
+        elif 'add_payment' in request.form:
+            member_id = request.form.get("add_payment")  # button value = member_id
+            amount_raw = request.form.get("payment_amount")
+            status = request.form.get("payment_status", "pending")
+            payment_type = request.form.get("payment_type", "membership")
+
+            if not member_id or not amount_raw:
+                flash("Member and amount are required to add a payment.")
+                return redirect(request.referrer)
+
+            try:
+                amount = float(amount_raw)
+            except ValueError:
+                flash("Invalid amount for payment.")
+                return redirect(request.referrer)
+
+            db_addPayment(member_id, amount, status=status, payment_type=payment_type)
+            flash("Payment added for member.")
+            return redirect(request.referrer)
         else:
             return redirect(request.referrer)
 
@@ -307,34 +328,350 @@ def owner_memberships():
         member_list=member_list
     )
 
-@auth.route("/owner/payments")
+@auth.route("/owner/payments", methods=['GET', 'POST'])
 def owner_payments():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
     
+    pending_payments = []
+    search_results = None
+    aggregate_total = None
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    pending_payments = db_loadPendingPayments()
+
+    if request.method == 'POST':
+        # Search payments by member and/or date range and status
+        if 'search_payment' in request.form:
+            member_query = request.form.get("search_member", "").strip()
+            date_from = request.form.get("date_from")  # yyyy-mm-dd
+            date_to = request.form.get("date_to")      # yyyy-mm-dd
+            status_filter = request.form.get("status_filter", "").strip().lower()
+
+            where = []
+            params = []
+
+            if member_query:
+                where.append("(p.member_id = %s OR CONCAT(m.first_name, ' ', m.last_name) LIKE %s)")
+                params.append(member_query)
+                params.append(f"%{member_query}%")
+
+            if date_from:
+                where.append("p.payment_date >= %s")
+                params.append(date_from)
+            if date_to:
+                where.append("p.payment_date <= %s")
+                params.append(date_to)
+
+            if status_filter in ("pending", "complete", "failed", "paid"):
+                where.append("LOWER(p.status) = %s")
+                params.append(status_filter)
+
+            sql = """
+                SELECT 
+                    p.payment_id,
+                    p.member_id,
+                    CONCAT(m.first_name, ' ', m.last_name) AS member_name,
+                    p.amount,
+                    p.payment_date,
+                    p.status,
+                    p.type
+                FROM Payments AS p
+                JOIN Members AS m ON p.member_id = m.member_id
+            """
+            if where:
+                sql += " WHERE " + " AND ".join(where)
+            sql += " ORDER BY p.payment_date DESC"
+
+            cursor.execute(sql, tuple(params))
+            search_results = cursor.fetchall()
+
+        # Aggregate complete payments for last N days
+        elif 'aggregate_over_n' in request.form:
+            n_days_raw = request.form.get("n_days")
+            try:
+                n_days = int(n_days_raw)
+            except (TypeError, ValueError):
+                flash("Invalid number of days.")
+                cursor.close()
+                db.close()
+                return redirect(request.referrer)
+
+            cursor.execute("""
+                SELECT SUM(amount) AS total
+                FROM Payments
+                WHERE LOWER(status) = 'complete'
+                  AND payment_date >= (CURDATE() - INTERVAL %s DAY)
+            """, (n_days,))
+            row = cursor.fetchone()
+            aggregate_total = row["total"] or 0.0
+
+    cursor.close()
+    db.close()
+
     return render_template(
         "/gymman_templates/owner_view/payments.html", 
         username=session["username"], 
-        name=session["name"]
+        name=session["name"],
+        pending_payments=pending_payments,
+        search_results=search_results,
+        aggregate_total=aggregate_total
     )
 
-@auth.route("/owner/staff")
+@auth.route("/owner/staff", methods=['GET', 'POST'])
 def owner_staff():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/owner_view/staff.html", username=session["username"], name=session["name"])
 
-@auth.route("/owner/trainers")
+    # Handle staff registration
+    if request.method == 'POST' and 'register_staff' in request.form:
+        ssn = request.form.get("ssn")
+        fname = request.form.get("first_name")
+        lname = request.form.get("last_name")
+        emp_date = request.form.get("employment_date")  # yyyy-mm-dd
+        birth_date = request.form.get("birth_date")     # yyyy-mm-dd
+        address = request.form.get("address")
+
+        staff_type = request.form.get("staff_type")  # hourly, salary, maintenance, manager, contractor
+
+        hourly_rate = request.form.get("hourly_rate") or None
+        annual_salary = request.form.get("annual_salary") or None
+        contract_type = request.form.get("contract_type") or None
+        contract_details = request.form.get("contract_details") or None
+        shift_managed = request.form.get("shift_managed") or None
+
+        # Basic validation
+        if not all([ssn, fname, lname, emp_date, birth_date, address, staff_type]):
+            flash("Missing required staff fields.")
+            return redirect(request.referrer)
+
+        try:
+            if hourly_rate is not None:
+                hourly_rate = float(hourly_rate)
+            if annual_salary is not None:
+                annual_salary = float(annual_salary)
+        except ValueError:
+            flash("Invalid pay values.")
+            return redirect(request.referrer)
+
+        staff_id = db_registerStaff(
+            ssn, fname, lname, emp_date, birth_date, address,
+            staff_type,
+            hourly_rate=hourly_rate,
+            annual_salary=annual_salary,
+            contract_type=contract_type,
+            contract_details=contract_details,
+            shift_managed=shift_managed
+        )
+        flash(f"Staff member registered with ID {staff_id}.")
+        return redirect(request.referrer)
+
+    # Show staff listing
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT staff_id, first_name, last_name, employment_date, birth_date, staff_address
+        FROM Staff
+        ORDER BY last_name, first_name
+    """)
+    staff_list = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "/gymman_templates/owner_view/staff.html",
+        username=session["username"],
+        name=session["name"],
+        staff_list=staff_list
+    )
+
+@auth.route("/owner/trainers", methods=['GET', 'POST'])
 def owner_trainers():
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/owner_view/trainers.html", username=session["username"], name=session["name"])
 
-@auth.route("/owner/exercise_logs")
-def owner_exercise_logs():
+    # Load all trainer-client relationships
+    trainer_clients = db_showTrainerClientRel()
+    search_term = None
+
+    if request.method == 'POST':
+        # Register a trainer from existing staff
+        if 'register_trainer' in request.form:
+            staff_id = request.form.get("staff_id")
+            speciality = request.form.get("speciality")
+            active_raw = request.form.get("active", "1")
+
+            if not staff_id or not speciality:
+                flash("Staff ID and speciality are required to register a trainer.")
+                return redirect(request.referrer)
+
+            try:
+                active = int(active_raw)
+            except ValueError:
+                active = 1
+
+            db_registerTrainer(staff_id, speciality, active=active)
+            flash("Trainer registered.")
+            return redirect(request.referrer)
+
+        # Assign trainer to a member
+        elif 'assign_trainer' in request.form:
+            trainer_id = request.form.get("trainer_id")
+            member_id = request.form.get("member_id")
+            notes = request.form.get("notes")
+
+            if not trainer_id or not member_id:
+                flash("Trainer and member IDs are required to assign a trainer.")
+                return redirect(request.referrer)
+
+            db_assignTrainer(trainer_id, member_id, notes=notes)
+            flash("Trainer assigned to member.")
+            return redirect(request.referrer)
+
+        # Filter trainer-client relationships
+        elif 'search_relationships' in request.form:
+            search_term = request.form.get("search_term", "").strip().lower()
+            if search_term:
+                filtered = []
+                for rel in trainer_clients:
+                    trainer_name = (rel.get("trainer") or "").lower()
+                    client_name = (rel.get("client") or "").lower()
+                    if search_term in trainer_name or search_term in client_name:
+                        filtered.append(rel)
+                trainer_clients = filtered
+
+    # Also provide list of trainers and members for dropdowns
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT staff_id, CONCAT(first_name, ' ', last_name) AS staff_name
+        FROM Staff
+        ORDER BY staff_name
+    """)
+    all_staff = cursor.fetchall()
+
+    all_trainers = db_getAllTrainers()
+
+    cursor.execute("""
+        SELECT member_id, CONCAT(first_name, ' ', last_name) AS member_name
+        FROM Members
+        ORDER BY member_name
+    """)
+    all_members = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "/gymman_templates/owner_view/trainers.html", 
+        username=session["username"], 
+        name=session["name"],
+        trainer_clients=trainer_clients,
+        all_trainers=all_trainers,
+        all_members=all_members,
+        all_staff=all_staff,
+        search_term=search_term
+    )
+
+@auth.route("/owner/exercise_logs", methods=['GET', 'POST'])
+def owner_exercise_logs(): # TODO: actually add the strenght / cardio tables
     if not is_logged_in("Owner"):
         return redirect(url_for("auth.login"))
-    return render_template("/gymman_templates/owner_view/exercise_logs.html", username=session["username"], name=session["name"])
+
+    selected_member_id = None
+    exercises = []
+
+    if request.method == 'POST':
+        # search / load exercises for a member
+        if 'search_member' in request.form:
+            selected_member_id = request.form.get("member_id")
+            if selected_member_id:
+                exercises = db_getExercise(selected_member_id)
+            else:
+                flash("Please choose a member to view exercises.")
+
+        # log a new exercise
+        elif 'log_exercise' in request.form:
+            member_id = request.form.get("log_member_id")
+            name = request.form.get("exercise_name")
+            rpe_raw = request.form.get("rpe")
+            date = request.form.get("exercise_date")  # yyyy-mm-dd
+
+            if not all([member_id, name, rpe_raw, date]):
+                flash("Member, exercise name, RPE, and date are required to log an exercise.")
+                return redirect(request.referrer)
+
+            try:
+                rpe = int(rpe_raw)
+            except ValueError:
+                flash("RPE must be an integer.")
+                return redirect(request.referrer)
+
+            # not using strength/cardio extra tables for now
+            db_logExercise(member_id, name, rpe, date)
+            flash("Exercise logged.")
+            selected_member_id = member_id
+            exercises = db_getExercise(member_id)
+
+        elif 'modify_exercise' in request.form:
+            exercise_id = request.form.get("exercise_id")
+            new_rpe = request.form.get("new_rpe")
+            new_date = request.form.get("new_date")
+            selected_member_id = request.form.get("member_id_for_refresh")
+
+            if not exercise_id:
+                flash("Exercise ID required to modify.")
+                return redirect(request.referrer)
+
+            rpe_val = None
+            if new_rpe:
+                try:
+                    rpe_val = int(new_rpe)
+                except ValueError:
+                    flash("Invalid RPE value.")
+                    return redirect(request.referrer)
+
+            db_modifyExercise(exercise_id, rpe=rpe_val, date=new_date)
+            flash("Exercise updated.")
+
+            if selected_member_id:
+                exercises = db_getExercise(selected_member_id)
+
+        elif 'delete_exercise' in request.form:
+            exercise_id = request.form.get("delete_exercise")
+            selected_member_id = request.form.get("member_id_for_refresh")
+
+            if not exercise_id:
+                flash("Exercise ID required to delete.")
+                return redirect(request.referrer)
+
+            db_deleteExercise(exercise_id)
+            flash("Exercise deleted.")
+
+            if selected_member_id:
+                exercises = db_getExercise(selected_member_id)
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT member_id, CONCAT(first_name, ' ', last_name) AS member_name
+        FROM Members
+        ORDER BY member_name
+    """)
+    all_members = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "/gymman_templates/owner_view/exercise_logs.html",
+        username=session["username"],
+        name=session["name"],
+        all_members=all_members,
+        selected_member_id=selected_member_id,
+        exercises=exercises
+    )
 
 @auth.route("/owner/error_logs")
 def owner_errors():
