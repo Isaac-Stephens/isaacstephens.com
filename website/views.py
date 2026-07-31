@@ -24,3 +24,7 @@ def lab():
 @views.route('/comparative-analysis-of-linux-scheduling')
 def cs3800finalpaper():
     return render_template("articles/CS3800_FinalProject.html")
+
+@views.route('/bsu_mc')
+def bsu_mc():
+    return render_template("bsu_mc.html")

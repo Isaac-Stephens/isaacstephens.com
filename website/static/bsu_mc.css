@@ -1,0 +1,299 @@
+/* ===== Base Styles ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-size: cover;
+    font-family: 'Hack', monospace;
+}
+
+body {
+    background-color: #0e0e0e;
+    color: #eaeaea;
+    line-height: 1.6;
+    padding-top: 80px;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #2d2d2d;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #4caf50;
+}
+
+.navbar nav a {
+    color: #eaeaea;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    transition: color 0.3s;
+}
+
+.navbar nav a:hover {
+    color: #d4af37;
+}
+
+/* ===== Hero Section ===== */
+#hero {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    background:
+        linear-gradient(
+            rgba(10, 10, 10, 0.75),
+            rgba(10, 25, 10, 0.85)
+        ),
+        linear-gradient(
+            135deg,
+            #0e0e0e,
+            #142414,
+            #1c2e1c
+        );
+
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+
+    padding: 0 2rem;
+    overflow-x: hidden;
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: #cfcfcf;
+}
+
+/* ===== Buttons ===== */
+.btn {
+    display: inline-block;
+    background: #4caf50;
+    color: #0e0e0e;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    background: #66bb6a;
+    transform: translateY(-2px);
+}
+
+.btn.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* ===== Sections ===== */
+section {
+    padding: 6rem 2rem;
+    max-width: 100%;
+    margin: auto;
+}
+
+section h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    color: #d4af37;
+}
+
+p {
+    margin: 0 auto 1.5rem auto;
+}
+
+section h5 {
+    display: block;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+section h4 {
+    display: block;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 2rem;
+}
+
+/* ===== Projects / Cards ===== */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.project-card {
+    background: #1a1a1a;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #292929;
+    transition: transform 0.3s, background 0.3s, border-color 0.3s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    background: #222222;
+    border-color: #4caf50;
+}
+
+.project-card h3 {
+    color: #4caf50;
+    margin-bottom: 1rem;
+}
+
+.project-card {
+    color: #eaeaea;
+    text-decoration: none;
+}
+
+/* ===== Server Box ===== */
+.server-box {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #151515;
+    border: 1px solid #333333;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.server-box h3 {
+    color: #d4af37;
+    margin-bottom: 1rem;
+}
+
+.server-box code {
+    display: block;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #0b0b0b;
+    border: 1px solid #292929;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    color: #66bb6a;
+    overflow-x: auto;
+}
+
+#about .project-card,
+#rules .project-card {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+#about .project-card p {
+    max-width: 800px;
+}
+
+#about .btn {
+    margin-top: 1rem;
+}
+/* ===== Mod List ===== */
+.mod-list {
+    padding-left: 1.5rem;
+}
+
+.mod-list li {
+    margin-bottom: 2 rem;
+}
+
+.mod-list li::marker {
+    color: #4caf50;
+}
+
+#join {
+    width: 60%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+    #join {
+        width: 90%;
+    }
+}
+/* ===== Contact / Sub Section ===== */
+#sub p {
+    width: 60%;
+    text-align: center;
+}
+
+#sub .btn {
+    display: block;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+#join .section-content {
+    width: 60%;
+}
+
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    padding: 2rem;
+    background: #111111;
+    border-top: 1px solid #292929;
+    color: #777777;
+    font-size: 0.9rem;
+}
+
+/* ===== Code Blocks ===== */
+pre {
+    background-color: #151515;
+    color: #d2d9e7;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    padding: 1em;
+    border: 1px solid #292929;
+    border-radius: 10px;
+    overflow: auto;
+}
+
+pre code {
+    display: block;
+    white-space: pre;
+}
+
+/* ===== Emphasis ===== */
+strong {
+    color: #ffffff;
+}
+
+a {
+    color: #4caf50;
+}
+
+a:hover {
+    color: #d4af37;
+}
