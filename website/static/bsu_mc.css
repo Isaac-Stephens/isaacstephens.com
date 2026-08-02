@@ -123,6 +123,14 @@ section h2 {
     color: #d4af37;
 }
 
+section h3 {
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    color: #4caf50;
+}
+
 p {
     margin: 0 auto 1.5rem auto;
 }
@@ -148,6 +156,7 @@ img {
 
 /* ===== Projects / Cards ===== */
 .projects-grid {
+    margin-bottom: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
@@ -236,6 +245,17 @@ img {
     width: 60%;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.admin-list {
+    display: inline-block;
+    text-align: left;
+}
+
+.admin-container {
+    margin-top: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 600px) {
