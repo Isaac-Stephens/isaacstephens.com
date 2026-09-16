@@ -26,8 +26,13 @@
         <img class="profile-image" src="../static/images/profile.jpg">
         </div>
         <h1>Isaac Stephens</h1>
-        <p>Yep, that my name, don't wear it out! Computer Science student with minors in Computer Engineering and Mathematics, U.S. Army NCO, and hands-on developer who loves building efficient systems and clean interfaces.</p>
-        <a class="download-btn" href="{{ url_for('static', filename='documents/IsaacStephens_RESUME.pdf') }}" download>Download Resume</a>
+        <p>Yep, that my name, don't wear it out! 
+           Computer Science student, U.S. Army NCO, and software developer
+           focused on Linux systems, DevOps, automation, and backend development.
+           I enjoy building reliable systems, automating repetative work, and solving
+           problems at the intersection of software, infastructure, and engineering.
+        </p>
+        <a class="download-btn" href="{{ url_for('static', filename='documents/IsaacStephens_RESUME_Fall2026.pdf') }}" download>Download Resume</a>
       </div>
     </section>
 
@@ -36,7 +41,8 @@
       <div class="stats-grid">
         <div><strong>Location:</strong> Missouri, USA</div>
         <div><strong>Education:</strong> B.S. Computer Science, Missouri S&T</div>
-        <div><strong>Tech Focus:</strong> C/C++, Web, and Embedded Systems</div>
+        <div><strong>Tech Focus:</strong> Software Engineering, DevOps & Linux Systems</div>
+        <div><strong>Graduation:</strong> May 2027</div>
         <div><strong>Looking For Work?:</strong> Yes</div>
       </div>
     </section>
@@ -45,19 +51,43 @@
     <section id="experience" class="section">
       <h2>[ Experience ]</h2>
       <div class="experience-item">
-        <h3>Missouri S&T — Computer Science</h3>
-        <p>Focused on systems programming, algorithms, and computational geometry. Built personal projects involving Vulkan rendering, database design, and web development.</p>
+        <h3>Missouri S&T - Computer Science</h3>
+        <p>
+            Devolop a strong foundation in software engineering, systems programming, algorithms,
+            databases, operating systems, and computer architecture. Build projects spanning C/C++,
+            Python, web applications, database systems, graphics, and Linux environments.
+        </p>
         <p>Jan 2022 -> May 2027</p>
       </div>
       <div class="experience-item">
         <h3>MST Materials Research Center - Undergraduate Research Assistant</h3>
-        <p>Conduct interdisciplinary research in the Materials Research Center at Missouri S&T for the Critical Materials Innovation Hub (CMI), applying rigorous experimental methods, quantitative data analysis, and systematic problem solving to investigate electrochemical processes. Collaborate with faculty and graduate researchers, maintain detailed technical documentation, and ensure reproducibility through careful experimental design and analysis.</p>
+        <p>
+            Apply my computer science background to research by developing automation tools for
+            extracting, organizing, and preparing research documents and data for AI-driven analysis.
+            Work with faculty and graduate researchers while maintaining detailed technical 
+            documentation and reproducible processes.
+        </p>
+        <p>
+            Conduct interdiciplinary research for the Critical Materials Innovation Hub (CMI),
+            investigating electrochemical processes through experimental methods, quantitative
+            analysis and reproducible workflows.
+        </p>
         <p>May 2024 -> Aug 2024, May 2026 -> Present</p>
       </div>
       <div class="experience-item">
-        <h3>Missouri Army National Guard — Sergeant (E5)</h3>
-        <p>Led teams and managed transport operations on state and federal missions. Applied leadership and logistical planning in high-tempo environments.</p>
-        <p>*I hold an active Secret Clearance with this possition.</p>
+        <h3>Missouri Army National Guard - Sergeant (E5)</h3>
+        <p>
+            Lead teams and manage transportation operations on state and federal missions.
+            Coordinated personnel, equipment, and logistics while maintaining accountability
+            for high-value equipment and operating effectively in high-tempo environments.
+        </p>
+        <p>
+            Develop practical experience in leadership, systems management, documentation,
+            troupbleshooting, and operational planning.
+        </p>
+        <p>
+            Active DoD Secret Clearance
+        </p>
         <p>Jun 2020 -> Present</p>
         <div class="resume-container">
           <img class="resume-image" src="../static/images/isaac_pog.jpg">
@@ -70,33 +100,84 @@
     <section id="projects" class="section">
       <h2>[ Projects ]</h2>
       <div class="project-item">
-        <h3>Gymman - Gym Management System</h3>
-        <p>A C++/wxWidgets-based tool for gym owners to dynamically manage common gym opperations like membership/staff management, exercise tracking, and more. Built as a MySQL / MariaDB database. Currently a WIP with plans for member facing web application.</p>
+        <h3>Personal Linux Server & Website Infastructure</h3>
+        <p>
+            Designed and maintain a Linux-based server environment running Debian, Nginx, Gunicorn,
+            Flask, MariaDB, SSH, and Cloudflare Tunnels to host and deploy my personal website
+            (<a href="https://isaacstephens.com" target="_blank">isaacstephens.com</a>)
+            and applications. Manage server configuration, networking, DNS, security, and 
+            application deployment. 
+        </p>
+        <a href="https://github.com/Isaac-Stephens/isaacstephens.com"
+           class="btn"
+           target="_blank"
+           rel="noopener noreferrer">
+            GitHub
+        </a>
       </div>
-
       <div class="project-item">
-        <h3>Personal Server + Website</h3>
-        <p>Configured a home Linux (Debian 13 Trixie) server running Nginx with a Cloudflare tunnel to host <a href="https://isaacstephens.com" target="_blank">isaacstephens.com</a> (Oh my gosh you're on that server right now! Isn't that just so neat?). Managed DNS, SSH, and deployment automation. This project has been a great way to learn more about web development and cybersecurity.</p>
+        <h3>Gymman - Gym Management system</h3>
+        <p>
+          Developing a database-backen gym management application for membership, staff,
+          trainer, and exercise management. Built with Python and MariaDB with a web based
+          client. Try out the <a href="https://isaacstephens.com/gymman-demo" target="_blank">demo</a>!
+        </p>
+        <a href="https://github.com/Isaac-Stephens/Gym-Manager"
+           class="btn"
+           target="_blank"
+           rel="noopener noreferrer">
+            GitHub
+        </a>
       </div>
     </section>
+
+
 
     <!-- EDUCATION -->
     <section id="education" class="section">
       <h2>[ Education ]</h2>
       <p><strong>Missouri University of Science & Technology</strong> — B.S. Computer Science</p>
+      <p><strong>Minors:</strong> Computer Engineering & Mathematics</p>
       <p><strong>GPA:</strong> 3.3 | <strong>Expected Graduation:</strong> Spring 2027</p>
-      <p><strong>Coursework:</strong> Data Structures, Algorithms, Database Systems, Operating Systems, Programing Languages & Translators, Micro Embedded Design, Engineering Statistics</p>
+      <p><strong>Coursework:</strong></p>
+      <ul class="skills-list">
+        <li>Operating Systems (CS3800)</li><li>Computer Networks (CS3610)</li>
+        <li>Databases & File Structures (CS2300)</li><li>Software Engineering Capstone I (CS4090)</li>
+        <li>Real Time Systems (CE5170)</li><li>Computer Organization & Design (CS3800)</li>
+        <li>Data Structures (CS1575)</li><li>Analysis of Algorithms (CS5200)</li>
+      </ul>
+      
     </section>
 
     <!-- SKILLS -->
     <section id="skills" class="section">
       <h2>[ Skills ]</h2>
       <ul class="skills-list">
-        <li>C/C++ / Python / Assembly</li>
-        <li>Vulkan / ImGui / OpenGL / wxWidgets</li>
-        <li>Apache / Nginx / Cloudflare</li>
-        <li>Linux / Git / MySQL</li>
+        <li>C/C++</li>
+        <li>Python</li>
+        <li>Assembly</li>
+        <li>SQL</li>
+        <li>Apache</li>
+        <li>Nginx</li>
+        <li>Clouldflare</li>
+        <li>Linux</li>
+        <li>Git/GitHub Actions</li>
+        <li>MySQL</li>
       </ul>
+    </section>
+    <section id="industry" class="section">
+      <h2>[ Engineering & Industry ]</h2>
+      <p>
+        My background combines computer science with hands-on experience in engineering research and military
+        operations. Through the Critical Materials Innovation Hub, I have worked alongside materials researchers
+        and gained exposure to electrochemical processes, critical-materials research, experimental data, and
+        scientific workflows.
+      </p>
+      <p>
+        This combination of software , systems, and engineering experience gives me an interest in applying computing
+        and automation to industries such as mining, critical materials, manufacturing, energy, defense, and national
+        labratory research.
+      </p>
     </section>
 
     <!-- PERSONAL -->
