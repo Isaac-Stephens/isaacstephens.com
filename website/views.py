@@ -29,6 +29,10 @@ def lab():
 def cs3800finalpaper():
     return render_template("articles/CS3800_FinalProject.html")
 
+@views.route('/real-time-containers')
+def cpe5170finalpaper():
+    return render_template("articles/RTOS_Paper.html")
+
 @views.route('/bsu_mc')
 def bsu_mc():
     return render_template("bsu_mc.html")

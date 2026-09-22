@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}<title>CpE5170 Semester Project</title>{% endblock %}
+{% block logo %}real_time{% endblock %}
+{% block dir %}<a href="/">{home}</a>{% endblock %}
+{% block content %}
+<section id="intro" class="section">
+    <div class="intro-container">
+        <h1>Evaluating the Impact of Containerization on Real-Time Task Predictability in Linux Systems</h1>
+        <p>Isaac Stephens</p>
+        <p>Junior, Computer Science, CS Department, Missouri S&T</p>
+        <p>Rolla, MO 65409</p>
+        <p>issq3r@mst.edu</p>
+        <a class="download-btn" href="{{ url_for('static', filename='documents/IsaacStephens_CpE5170_SemesterProject.pdf') }}" download>Download Report</a>
+    </div>
+</section>
+<section id="abstract" class="section">
+    <h2>Abstract</h2>
+    <p><i>This project evaluates the effect of containerization on soft real-time task predictability in Linux systems. The study compares periodic CPU-bound workloads executed directly on the host system and inside Docker containers under both a standard mainline Linux kernel and a PREEMPT_RT kernel. The workloads were generated using rt-app and evaluated using metrics such as cyclictest maximum latency, rt-app deadline miss rate, rt-app jitter, and rt-app average wake-up latency. A bare-metal mainline CFS configuration was also included as a baseline comparison. Across the collected results, the PREEMPT_RT kernel generally produced much lower cyclictest latency than the standard mainline kernel, suggesting improved scheduling responsiveness. Docker did not always severely degrade rt-app behavior, but containerized runs still showed evidence of added timing variability, especially under the mainline kernel. The results also showed that deadline miss behavior was strongly affected by workload utilization and task structure, not only by the execution environment. Because the experiment was performed on a non-isolated laptop rather than a dedicated test machine, the results should be interpreted as exploratory evaluation rather than a complete characterization of Linux real-time performance. Overall, the study suggests that PREEMPT_RT can improve latency predictability, while containerization may be practical for soft real-time workloads when system configuration and workload limits are carefully controlled.</i></p>
+</section>
+<section id="project-introduction" class="section">
+    <h2>I. INTRODUCTION</h2>
+    <p>Modern distributed systems increasingly deploy workloads using container-based virtualization. Containers are widely used in edge computing, industrial control gateways,  robotics, and cloud-based control pipelines. Many of these systems operate under soft real-time constraints, where bounded latency and low jitter are required, but occasional deadline misses may be tolerated.</p>    
+    <p>For such applications Linux-based operating systems are commonly chosen due to their flexibility, ecosystem maturity, and maintainability. However, the Linux kernel does not provide hard real-time guarantees by default. Although it supports real-time scheduling classes such as SCHED_FIFO and SCHED_DEADLINE, worst-case latency is not strictly bounded under the default preemption model [1]. Furthermore, container platforms such as Docker, LXC, and Kubernetes share the host kernel and introduce additional scheduling abstractions through namespaces and cgroups. These abstractions may affect scheduling behavior and timing predictability.</p>
+    <p>This work will evaluate soft real-time predictability through the implementation of a periodic real-time workload generator on Linux to measure task latency, jitter, and deadline miss behavior using high-resolution timers. The study compares performance of the SCHED_DEADLINE scheduling policy under two kernel configurations: (1) the standard mainline kernel operating under its default preemption model, and (2) a kernel configured with the PREEMPT_RT patch to enable fully preemptible kernel behavior. For each kernel configuration, experiments are conducted in both bare-metal and containerized (Docker) environments. This comparison isolates the impact of kernel-level preemption behavior and container-level resource isolation on soft real-time predictability.</p>
+    <p>The central research question of this work is: To what extent does containerization degrade latency, jitter, and deadline adherence compared to bare-metal execution, and can these effects be mitigated through system-level tuning?</p>
+</section>
+<section id="background" class="section">
+    <h2>II. BACKGROUND</h2>
+    <h3><i>2.1 Real-Time Scheduling In Linux</i></h3>
+    <p>The Linux kernel provides multiple scheduling classes to support general-purpose and real-time workloads. The default scheduling class, SCHED_NORMAL, is implemented by the Completely Fair Scheduler (CFS), which aims to distribute CPU time proportionally among runnable tasks. While CFS is designed for fairness and throughput, it does not provide deterministic timing guarantees and is therefore unsuitable for strict real-time constraints.</p>
+    <p>To support time-sensitive workloads, Linux provides fixed-priority real-time scheduling classes, including SCHED_FIFO and SCHED_RR. Under these policies, tasks with higher static priority preempt lower-priority tasks, enabling bounded response times under controlled conditions. However, even when real-time policies are used, the standard mainline kernel contains non-preemptible sections, interrupt handling latencies, and kernel locking mechanisms that can introduce unbounded worst-case delays [1].</p>
+    <p>More recently, Linux introduced the SCHED_DEADLINE scheduling class, which implements an Earliest Deadline First (EDF) scheduler combined with a constant Bandwidth Server (CBS) mechanism, enabling temporal isolation among competing real-time tasks. While EDF and CBS provide strong theoretical guarantees on schedulability when total utilization is bounded, practical behavior in the Linux kernel implementation can deviate from theory under certain conditions such as task affinities and kernel interactions. Prior work has identified implementation limitations in the Linux SCHED_DEADLINE scheduler with respect to tardiness bounds and affinity behavior, highlighting that theoretical EDF guarantees do not always hold in practice on mainstream kernels [2].</p>
+    <p>Despite these theoretical properties, practical timing behavior in Linux heavily on kernel preemption behavior and interrupt handling. The PREEMPT_RT patch modifies the Linux kernel to become fully preemptible. It reduces non-preemptible sections, converts most interrupt handlers int preemptible kernel threads, and introduces priority inheritance mechanisms to mitigate priority inversion. Prior evaluation have shown that PREEMPT_RT significantly reduces worst-case scheduling latency compared to the default kernel configuration [1]. However, even under PREEMPT_RT, strict hard real-time guarantees require careful system configuration and workload isolation.</p>
+
+    <h3><i>2.2 Containerization and Resource Isolation</i></h3>
+    <p>In Linux container environments, isolation between applications is primarily implemented using namespaces and control groups (cgroups). Container virtualization evolved from earlier process isolation mechanisms such as the chroot system call and later systems like FreeBSD Jails, which allowed multiple isolated environments to run on a single operating system instance [4]. Modern Linux container implementations build upon these ideas by providing kernel-level primitives that enable processes to operate in isolated execution contexts while still sharing the same host kernel. Namespaces provide logical separation of kernel resources so that processes inside a container perceive a private instance of system components such as process identifiers, network interfaces, mount points, and inter-process communication mechanisms [3].</p>
+    <p>While namespaces isolate the system view presented to processes, cgroups provide mechanisms for resource accounting and enforcement. Control groups allow the Linux kernel to monitor and limit the usage of system resources such as CPU time, memory, and I/O bandwidth for groups of processes. Container runtimes such as Docker and LXC configure namespaces and cgroups together to create isolated execution environments for applications running on a shared kernel. Because containers rely on the host kernel scheduler for CPU allocation, the interaction between cgroup resource controls and Linux scheduling policies can influence the timing behavior or real-time workloads [3].</p>
+    <p>Resource isolation in containerized systems is often implemented using cgroup-base CPU bandwidth control mechanisms that limit the amount of processor time available to groups of tasks. While this approach allows the operating system to enforce resource quotas across containers, prior work has shown that cgroup-based CPU control may not always provide strong temporal isolation under high system load. In particular, experiments comparing cgroups with the SCHED_DEADLINE scheduling policy demonstrate that tasks relying solely on cgroup bandwidth control can experience significant interference from co-located workloads, leading to delayed execution and reduced CPU bandwidth availability. In contrast, tasks scheduled using SCHED_DEADLINE are able to maintain CPU bandwidth closer to their requested allocation, resulting in substantially smaller execution delays and more predictable response times. These findings suggest that real-time scheduling policies may provide stronger temporal isolation for critical workloads than cgroup-based mechanisms alone, particularly under high CPU utilization conditions [5].</p>
+
+    <h3><i>2.3 Real-Time Performance of Containers</i></h3>
+    <p>Recent research has investigated whether container-based virtualization can support workloads with real-time constraints. Several studies have evaluated container performance using metrics such as latency, jitter, and deadline adherence under controlled workloads. These studies generally find that containers introduce relatively small overhead compared to native execution because they share the host operating system kernel and avoid the full hardware abstraction layer used in traditional virtual machines. As a result, containerized environments can often achieve comparable average performance while enabling flexible deployment and modular system architectures [6].</p>
+    <p>However, despite the low overhead of containerization, maintaining predictable real-time behavior remains challenging. Prior work has shown that containerized workload scan experience increased timing variability when multiple containers compete for CPU resources or when resource management mechanisms such as cgroups introduce scheduling interference. In such cases, the timing behavior of real-time tasks may degrade due to contention for shared kernel resources and delays introduced by background workloads [7].</p>
+    <p>Empirical evaluations of containerized real-time systems have also examined their suitability for industrial automation and cyber-physical applications. Some studies demonstrate that containerized deployments can meet soft real-time deadlines in distributed control systems and microservice-based architectures when appropriate scheduling policies and system configurations are used [8]. Other work evaluating virtualization technologies for real-time workloads emphasizes that worst case-latency and temporal isolation remain key challenges when deploying time-sensitive applications in shared computing environments [9].</p>
+    <p>More recent experimental work has focused on quantifying latency, jitter, and resource consumption across different virtualization platforms and deployment configurations. These studies highlight the importance of kernel configuration, scheduling policies, and resource allocation mechanisms in determining whether containerized systems can achieve predictable real-time behavior [10]. These findings motivate the experimental evaluation conducted in this work, which compares the behavior of real-time tasks across bare-metal and containerized environments under different Linux kernel configurations.</p>
+</section>
+<section id="methods-metrics" class="section">
+    <h2>III. METHODOLOGY</h2>
+    <h3><i>3.1 Experimental Approach and Comparison Method</i></h3>
+    <p>This work evaluates how containerization affects soft real-time predictability in Linux by executing the same periodic real-time workload under multiple system configurations and comparing timing outcomes. The workload is scheduled using the Linux SCHED_DEADLINE scheduling class and is executed in two execution environments: (1) directly scheduled by the kernel or “bare-metal” and (2) Docker containers. Each environment is tested under two kernel configurations: (a) a standard mainline Linux kernel, Linux 6.12.57+deb13-amd64, using the default preemption model, and (b) a kernel re-configured with the PREEMPT_RT patch. This design isolates the impact of container-level isolation mechanism and kernel-level preemption behavior on timing predictability. All other factors are controlled as much as possible across configurations, including CPU affinity, workload parameters, experiment duration, and background services.</p>
+
+    <h3><i>3.2 Workload Generation</i></h3>
+    <p>The periodic workload used in this study is generated using rt-app, a workload generation tool designed for evaluating real-time scheduling behavior in Linux systems [11]. It allows the creation of periodic tasks with explicitly defined real-time parameters, including execution runtime C, activation period T, and relative deadline D. These parameters correspond directly to the classical periodic real-time task model used in scheduling theory, where task utilization is defined as U=C⁄T.</p>
+    <p>In this study, rt-app is used to generate periodic CPU-bound workloads representative of soft real-time applications such as edge computing services, robotics middleware components, and industrial control tasks. The workloads are executed under identical parameters across all experimental configurations to isolate the effects of containerization and kernel preemption behavior on real-time performance. </p>
+
+    <h3><i>3.3 Performance Measurement and Metrics</i></h3>
+    <p>To evaluate real-time predictability under each experimental configuration, timing measurements are collected using both the rt-app workload generator and the Linux real-time latency measurement tool cyclictest. cyclictest is widely used in real-time Linux evaluations to measure scheduling latency by repeatedly waking a periodic task and recording the delay between the expected activation time and the actual wake-up time [12]. In this study, cyclictest is used to establish a baseline measurement of system scheduling latency under each kernel configuration and execution environment. These measurements provide an independent reference for understanding the underlying scheduling behavior of the system before running the full workload experiments.</p>
+    <p>In addition to cyclictest measurements, the periodic tasks generated by rt-app record timing information using high-resolution monotonic clocks available in the Linux kernel. For each job release, the workload records three timestamps: the expected release time, the actual start time when the task begins executing, and the completion time when the job finishes execution. These timestamps are logged for offline analysis and are used to compute latency, jitter, and deadline miss rate.</p>
+    <p>These three metrics are used to evaluate scheduling predictability. Latency L_k is defined as the difference between the expected release time r_k and the observed start time s_k of the task k such that L_k=s_k-r_k, representing the delay introduced by the operating system scheduler on competing workloads. Jitter J refers to the variability in latency across successive job executions and is calculated as the standard deviation of the observed latency values. High jitter indicates unstable scheduling behavior and reduced timing predictability. Deadline misses occur when the completion time of a job exceeds its relative deadline D, meaning the task fails to complete within its required execution window. By analyzing these metrics across all experimental configurations, the study quantifies how containerization and kernel preemption models influence the predictability of periodic real-time workloads.</p>
+</section>
+<section id="results" class="section">
+    <h2>IV. RESULTS & DISCUSSION</h2>
+    <h3><i>4.1 Plots & Figures</i></h3>
+    <img src="{{url_for('static', filename='images/RTOS/Fig1_rt-appFailRatebyExp.png')}}"/>
+    <h5><i>Fig. 1: Failure Rate of rt-app by Experiment Setup</i></h5>
+    <img src="{{url_for('static', filename='images/RTOS/Fit2_CyclictestMaxLatencybyExp.png')}}"/>
+    <h5><i>Fig. 2: cyclictest Max Latency Box-plot by Setup</i></h5>
+    <img src="{{url_for('static', filename='images/RTOS/Fig3_Heatmap_WorstObservedCyclictestLatencybyWorkandSetup.png')}}" />
+    <h5><i>Fig. 3: Worst Observed cyclictest Latency Heat-map by Workload & Setup</i></h5>
+    <img src="{{url_for('static', filename='images/RTOS/Fig4_MeanRt-appDeadlineMissRatebyWLandSU.png')}}"/>
+    <h5><i>Fig. 4: Mean rt-app Deadline Miss Rate Heat-map by Workload & Setup</i></h5>
+
+    <h5><i>Table 1: Median rt-app Jitter (μs) by Workload & Settup</i></h5>
+    <table>
+    <tr>
+        <td>Setup</td>
+        <td>Baremetal + Mainline + CFS</td>
+        <td>Baremetal + Mainline + DL</td>
+        <td>Baremetal + PREEMPT_RT + DL</td>
+        <td>Docker + Mainline + DL</td>
+        <td>Docker + PREEMPT_RT + DL</td>
+    </tr>
+    <tr>
+        <td>bursty</td>
+        <td>8653030</td>
+        <td>4.83064</td>
+        <td>44.3423</td>
+        <td>47.5944</td>
+        <td>38.26225</td>
+    </tr>
+    <tr>
+        <td>flat10</td>
+        <td>8645800</td>
+        <td>2.095875</td>
+        <td>28.3151</td>
+        <td>35.62355</td>
+        <td>29.698</td>
+    </tr>
+    <tr>
+        <td>flat25</td>
+        <td>8645810</td>
+        <td>0</td>
+        <td>16.3309</td>
+        <td>14.8659</td>
+        <td>16.7092</td>
+    </tr>
+    <tr>
+        <td>flat50</td>
+        <td>8645820</td>
+        <td>0</td>
+        <td>3.5901</td>
+        <td>3.23112</td>
+        <td>3.3141</td>
+    </tr>
+    <tr>
+        <td>flat100</td>
+        <td>8661825</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td>mixed_period10</td>
+        <td>8645810</td>
+        <td>33636.5</td>
+        <td>26859.9</td>
+        <td>23692.3</td>
+        <td>49.6407</td>
+    </tr>
+    <tr>
+        <td>mixed_period25</td>
+        <td>8645810</td>
+        <td>7784.495</td>
+        <td>16043.05</td>
+        <td>15216.3</td>
+        <td>17180.9</td>
+    </tr>
+    <tr>
+        <td>mixed_period50</td>
+        <td>8645790</td>
+        <td>0</td>
+        <td>4751.24</td>
+        <td>4623.02</td>
+        <td>5539.545</td>
+    </tr>
+    <tr>
+        <td>mixed_period100</td>
+        <td>8658280</td>
+        <td>0</td>
+        <td>0.310685</td>
+        <td>0</td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td>overload140</td>
+        <td>8661000</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+    </tr>
+</table>
+    <p> </p>
+    <img src="{{url_for('static', filename='images/RTOS/Fig5_ScatterCyclictestMaxLatency_v_rt-appMissRate.png')}}"/>
+    <h5><i>Fig. 5: cyclictest Max Latency vs rt-app Miss Rate</i></h5>
+    <img src="{{url_for('static', filename='images/RTOS/Fig6_Scatter_Wake-upLatency_v_jitter.png')}}"/>
+    <h5><i>Fig. 6: Scatter Plot of rt-app Wake-up :atency vs Jitter</i></h5>
+
+    <h3><i>4.2 Discussion</i></h3>
+    <p>The results show that kernel configuration had a noticeable effect on scheduling latency. Figures 2 and 3 show that the PREEMPT_RT configurations generally produced much smaller cyclictest maximum latency values than the mainline kernel configurations. This trend appears in both the bare-metal and Docker environments. In the appendix, the worst observed cyclictest latencies for the mainline kernel configurations are generally in the thousands of microseconds, while the PREEMPT_RT configurations are usually much lower. For example, the bare-metal PREEMPT_RT + SCHED_DEADLINE setup reports worst observed cyclictest latencies such as 47 μs for flat25, and 39 μs for mixed_period100. In contrast, the bare-metal mainline configurations often report worst case observed cyclictest latencies above 5000 μs for the same general workload group. This suggests that PREEMPT_RT improved the responsiveness of the system by reducing scheduling delay, which is consistent with the expected purpose of the real-time kernel patch.</p>
+    <p>The Docker results where more mixed. Docker + Mainline + SCHED_DEADLINE often showed cyclictest latency values similar to the bare-metal mainline configurations, and in some cases the worst observed latency was higher. For example, the bursty workload reached a worst observed cyclictest latency of 8594 μs in the Docker + Mainline + SCHED_DEADLINE setup. This suggests that container execution under the mainline kernel may introduce additional timing variability, or at least does not remove the underlying latency behavior of the host kernel. However, Docker + PREEMPT_RT + SCHED_DEADLINE showed much lower cyclictest latency for the bursty workload than Docker on the mainline kernel at 254 μs. This indicates that the host kernel configuration still plays a major role in containerized real-time behavior because Docker containers share the host kernel rather than running an independent kernel like a dedicated virtual machine would [6]. </p>
+    <p>Figure 1 and Table 3 show that rt-app failures where not distributed evenly across the experiment setups. The baseline Bare-metal + Mainline + CFS and Bare-metal + Mainline + SCHED_DEADLINE had no recorded rt-app failures. However, Bare-metal + PREEMPT_RT + SCHED_DEADLINE had a 20.6% failure rate, Docker + Mainline + SCHED_DEADLINE had an 11.8% failure rate, and Docker + PREEMPT_RT + SCHED_DEADLINE had a 10.0% failure rate. These failures where caused by a divide-by-zero exception inside rt-app. Because the failure occurred inside the workload tool rather than in the data analysis script, failed runs were logged and excluded from the final metric calculations. This limits the strength of the conclusions because the successful trials may not fully represent every attempted run. However, excluding failed trials was necessary to avoid mixing invalid or incomplete timing logs into the final statistics.</p>
+    <p>The deadline miss results in Figure 4 show that deadline adherence was affected by more than just the kernel or container environment. Workload utilization and workload structure were also important. The higher-utilization workloads, especially flat100 and overload140, produced high miss rates across multiple configurations. This is expected because these workloads place the system near or above full utilization. In the overload140 case, total CPU utilization is 140%, which is intentionally above the feasible utilization bound for a single processor when all tasks require their full execution time. Therefore, high miss rates in this workload should not be interpreted as only a failure of Docker or the kernel. Instead, they show how the system behaves under overload conditions.</p>
+    <p>Table 1 shows that rt-app jitter also varied strongly by workload type. The mixed-period workloads often produced larger jitter values than the flat-period workloads. This is reasonable because mixed-period task sets create more varied release patterns and more complex scheduling interactions than task sets where every task has the same period. For example, mixed_period10 and mixed_period25 show relatively large jitter values in several SCHED_DEADLINE configurations, while flat50, flat100, and overload140 often show median jitter values near zero in some configurations. This does not mean those workloads performed better overall, because some of them still had high deadline miss rates, approaching 100%. Instead, it shows that jitter and deadline miss rate measure different aspects of predictability. A workload can have low measured jitter while still missing deadlines if it is overloaded or if the task timing pattern consistently fails to complete before the deadline.</p>
+    <p>The CFS baseline is useful as a general comparison point, but it should be interpreted carefully. The baseline used SCHED_OTHER/CFS rather than SCHED_DEADLINE, so it was not expected to provide the same deadline-aware behavior as the main experiment configurations. The CFS baseline also did not include the rt-app average wake-up latency metric due to time constraints, which is why it does not appear in Figure 6. The rt-app jitter metric was still collected for the baseline, but the baseline values are much larger than the SCHED_DEADLINE values. This suggests that CFS is not well suited for predictable periodic real-time execution. However, because the baseline was not configured with the same scheduling policy as the other setups, it should mainly be treated as a reference for normal Linux scheduling behavior rather than a direct competitor to the SCHED_DEADLINE configurations.</p>
+    <p>Figure 5 compares cyclictest maximum latency with rt-app deadline miss rate. The relationship between these two metrics does not appear to be perfectly linear. Some configurations may have relatively low cyclictest latency but still show high miss rates for specific workloads. This is because cyclictest measures wake-up latency using a controlled periodic test thread, while rt-app measures behavior under the actual workload configuration. Deadline misses depend on task execution time, period, deadline, utilization, scheduler behavior, and interference from other tasks. Therefore, cyclictest is useful for understanding baseline scheduling latency, but it does not fully predict whether a specific workload will meet every deadline.</p>
+    <p>Figure 6 compares rt-app average wake-up latency with rt-app jitter for the SCHED_DEADLINE configurations. The CFS baseline does not appear in this plot because average wake-up latency was not collected for that setup. Because the figure is plotted on a log scale, the relationship is easier to see across workloads with very different timing magnitudes. The plotted data suggests a positive curved relationship between wake-up latency and jitter, approximately following a y=√x-shaped trend for much of the data. In general, lower average wake-up latency coincides with lower jitter, while higher wake-up latency corresponds to increased jitter.</p>
+    <p>One notable feature is that around an average wake-up latency of approximately 10^2 μs, the jitter values appear to fum from roughly 10^2 μs to approximately 10^3 μs across the tested environments. After this jump the trend continues in a more expected curved pattern. This may suggest a threshold region where increased wake-up delay begins to have a stronger effect on timing variability.</p>
+    <p>There were several important limitations in this experiment. First, the tests were performed on a laptop that was still being used as a normal operating system environment during the testing phase. Background processes, desktop environment activity, interrupts, power management behavior, and other system services may have affected timing measurements. A dedicated clean test machine with minimized background activity would likely produce cleaner and more repeatable results. Second, the number of experiment configurations was limited by time. The project compared mainline and PREEMPT_RT kernels, bare-metal and Docker execution, and several workload utilization levels, but it did not deeply explore every possible tuning option. Third, the Docker configuration required practical adjustments. Docker CPU-set restrictions caused SCHED_DEADLINE to fail with an “Operation not permitted” error when using Docker’s --cpuset-cpus option. Removing that option allowed rt-app to apply the deadline scheduler successfully, suggesting that CPU affinity for the Docker runs should be controlled inside the rt-app workload configuration rather than through Docker’s cpuset cgroup.</p>
+    <p>Overall, the results suggest that PREEMPT_RT improved scheduling latency, especially as measured by cyclictest. Containerization did not eliminate the benefits of PREEMPT_RT, since Docker + PREEMPT_RT still showed much lower cyclictest latency than Docker + Mainline. However, the rt-app results also show that real-time predictability depends heavily on workload utilization, task period structure, and system stability. For soft real-time systems, the results suggest that containers can be usable, but only when the host kernel, scheduling policy, workload utilization, and CPU affinity are configured carefully.</p>
+</section>
+<section id="conclusions" class="section">
+    <h2>V. CONCLUSIONS</h2>
+    <p>This project showed that kernel configuration has a major effect on soft real-time predictability in Linux. The PREEMPT_RT kernel generally produced much lower scheduling latency than the standard mainline kernel, especially in the cyclictest results. This suggests that improving kernel preemption behavior is one of the most useful steps for reducing latency in Linux-based real-time workloads.</p>
+    <p>The results also showed that containerization does not automatically prevent soft real-time execution. Docker workloads were still able to run under SCHED_DEADLINE, and Docker with PREEMPT_RT showed much better latency behavior than Docker on the mainline kernel. However, the containerized results also suggest that Docker adds configuration complexity and may contribute to timing variability if the system is not carefully controlled.</p>
+    <p>A major lesson from the experiment is that real-time predictability depends on more than one metric. Wake-up latency, jitter, cyclictest latency, and deadline miss rate each describe different parts of the system’s behavior. Workload structure and utilization also mattered, especially for the mixed-period and overloaded workloads.</p>
+    <p>Overall, the study suggests that PREEMPT_RT can improve soft real-time predictability and that containerized real-time workloads are possible, but only with careful scheduling, workload design, and system configuration. Future work should repeat the experiment on a dedicated test machine with better isolation to reduce interference from background operating system activity.</p>
+</section>
+<section id="future-work" class="section">
+    <h2>VI. FUTURE WORK</h2>
+    <p>Future work should repeat the experiment on a dedicated test machine with minimal background activity to reduce interference from the operating system and improve repeatability. Additional experiments could also evaluate different CPU-affinity and cgroup configurations to determine how resource isolation affects real-time predictability in Docker. Finally, testing a larger range of workloads, utilization levels, and container configurations would provide a more complete understanding of the conditions which containerized soft real-time workloads can maintain predictable timing.</p>
+</section>
+<section id="references" class="section">
+    <h2>VII. REFERENCES</h2>
+    <p>[1] F. Reghenzani, G. Massari, and W. Fornaciari, “The Real-time Linux Kernel,” ACM Computing Surveys, vol. 52, no 1, pp. 1-36, Feb. 2019, doi: https://doi.org/10.1145/3297714.</p>
+    <p>[2] S. Tang, J. H. Anderson, and Luca Abeni, “On the Defectiveness of SCHED_DEADLINE w.r.t. Tardiness and Affinities, and a Partial Fix,” pp. 46–56, Apr. 2021, doi: https://doi.org/10.1145/3453417.3453440.</p>
+    <p>[3] L. Abeni, A. Balsini, and T. Cucinotta, “Container-based real-time scheduling in the Linux kernel,” ACM SIGBED Review, vol. 16, no. 3, pp. 33–38, Nov. 2019, doi: https://doi.org/10.1145/3373400.3373405.</p>
+    <p>[4] R. Queiroz, T. Cruz, J. Mendes, P. Sousa, and Paulo Simões,  “Container-based Virtualization for Real-Time Industrial Systems – A  Systematic Review,” ACM Computing Surveys, Aug. 2023, doi: https://doi.org/10.1145/3617591.</p>
+    <p>[5] M. Thiyyakat, S. Kalambur, and D. Sitaram, “Improving Resource Isolation  of Critical Tasks in a Workload.” Accessed: Mar. 04, 2026. [Online].  Available:  https://jsspp.org/papers20/Improving-Resource-Isolation_JSSPP2020.pdf?utm_source=google.com</p>
+    <p>[6] Václav Struhár, M. Behnam, M. Ashjaei, and Alessandro Vittorio  Papadopoulos, “Real-time containers : A survey,” vol. 80, p. 9, Jan.  2020, doi: https://doi.org/10.4230/oasics.fog-iot.2020.7.</p>
+    <p>[7] Václav Struhár, S. S. Craciunas, M. Ashjaei, M. Behnam, and Alessandro  Vittorio Papadopoulos, “REACT: Enabling Real-Time Container  Orchestration,” Zenodo (CERN European Organization for Nuclear Research), Sep. 2021, doi: https://doi.org/10.1109/etfa45728.2021.9613685.</p>
+    <p>[8] D. Martínez, S. L. Castaño, J. C. Perafan, and O. H. Mondragón,  “Microservices-Based Architecture to Support Automation Applications in  Smart Industries with End-to-End Real-Time Requirements,” Tsinghua Science and Technology, vol. 31, no. 2, pp. 708–725, Apr. 2026, doi: https://doi.org/10.26599/tst.2024.9010235.</p>
+    <p>[9] Luca Abeni, “Virtualized real-time workloads in containers and virtual machines,” Journal of Systems Architecture, vol. 154, pp. 103238–103238, Jul. 2024, doi: https://doi.org/10.1016/j.sysarc.2024.103238.</p>
+    <p>[10] N. Ben Kebaier, B. Geib, E. Lyczkowski, R. Venanzi, and M. Barth, “Real-Time Performance Evaluation of Containerized Virtual PLCs: A Comparative Study of Docker and Podman for Industrial Automation,” 2025 IEEE 30th International Workshop on Computer Aided Modeling and Design of Communication Links and Networks (CAMAD), pp. 1–6, Oct. 2025, doi: https://doi.org/10.1109/camad67323.2025.11229890.</p>
+    <p>[11] Shah, R. G. Shenoy, V. Srinivasan, P. Bose, and A. Buyuktosunoglu, “TokenSmart: Distributed, Scalable Power Management in the Many-core Era,” ACM Transactions on Architecture and Code Optimization, vol. 20, no. 1, pp. 1–26, Nov. 2022, doi: https://doi.org/10.1145/3559762.</p>
+    <p>[12] D. Bristot De Oliveira, D. Casini, R. Silva De Oliveira, and T. Cucinotta, “Demystifying the Real-Time Linux Scheduling Latency.” Accessed: Mar. 05, 2026. [Online]. Available: https://retis.santannapisa.it/~tommaso/publications/ECRTS-2020.pdf?utm_source=google.com.</p>
+</section>
+<section id="appendix" class="section">
+    <h2>VIII. APPENDIX</h2>
+    <p><i>Please refference the downloadable PDF <a href="#intro">here</a>.</i></p>
+</section>
+
+{% endblock %}
